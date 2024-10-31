@@ -26,3 +26,23 @@ body {
 		text-wrap: balance;
 	}
 }
+
+.navbar-noscroll {
+	--tw-bg-opacity: 1;
+	background-color: rgb(36 36 36 / var(--tw-bg-opacity));
+	--tw-text-opacity: 1;
+	border-bottom: 1px solid rgb(36 36 36 / var(--tw-bg-opacity));
+	color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.navbar-scroll {
+	--tw-bg-opacity: 1;
+	background-color: #ffffff;
+	--tw-text-opacity: 1;
+	color: var(--foreground);
+	border-bottom: 1px solid #e2e2e2;
+}
+
+.no-scroll {
+	overflow: hidden;
+}

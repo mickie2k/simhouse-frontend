@@ -1,9 +1,39 @@
 "use client";
 
 import Link from "next/link";
-
+import { FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import cookies from "js-cookie";
 export default function LoginhtmlForm() {
-	const onSubmit = async () => {};
+	const router = useRouter();
+	const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		const formData = new FormData(event.currentTarget);
+		const formDataJson: { [key: string]: FormDataEntryValue } = {};
+		formData.forEach((value, key) => {
+			formDataJson[key] = value;
+		});
+
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}user/login`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json", // Set the content type to JSON
+				},
+				credentials: "include",
+				body: JSON.stringify(formDataJson),
+			}
+		);
+		if (response.status !== 200) {
+			alert("Login failed");
+		}
+		if (response.status === 200) {
+			cookies.set("isAuth", "true");
+			router.push("/");
+		}
+	};
 	return (
 		<section className="bg-white mt-7">
 			<div className="flex flex-col items-center  px-6 py-0 mx-auto md:h-full lg:py-0 ">

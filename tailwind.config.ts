@@ -18,6 +18,9 @@ const config: Config = {
         accent: "#FF8000",
         black2: "#222222",
         hrColor: "#C2C2C2",
+        secondText: "#717171",
+        borderColor1: "#E2E2E2",
+        borderColor2: "#D1D5DB"
       },
     },
   },

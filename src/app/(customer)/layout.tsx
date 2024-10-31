@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { overpass, inter } from "@/utilities/font";
 import Header from "@/components/navbar/navbar";
 import "../globals.css";
+import Auth from "@/context/AuthContext";
 
 export const metadata: Metadata = {
 	title: "Simhouse",
@@ -16,9 +17,12 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
+				id="_next"
 				className={`${overpass.className} ${overpass.variable} ${inter.variable}  antialiased min-h-screen`}
 			>
-				<Header></Header>
+				<Auth>
+					<Header />
+				</Auth>
 				{children}
 			</body>
 		</html>

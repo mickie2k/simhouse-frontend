@@ -6,6 +6,9 @@ const nextConfig = {
 			destination: "http://localhost:3001/auth/:path*", // Adjust the port
 		},
 	],
+	images: {
+		domains: ["simracingcockpit.gg"], // Add your allowed domains here
+	},
 };
 
 export default nextConfig;

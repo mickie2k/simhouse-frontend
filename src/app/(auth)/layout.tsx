@@ -18,7 +18,7 @@ export default function AuthLayout({
 			<body
 				className={`${overpass.className} ${overpass.variable} ${inter.variable}  antialiased min-h-screen`}
 			>
-				<header className="flex items-center justify-between px-20 py-5 bg-transparent text-black sticky top-0 z-50 w-full border-b border-[#E2E2E2]">
+				<header className="flex items-center justify-between px-20 py-5 bg-transparent text-black sticky h-20 top-0 z-50 w-full border-b border-[#E2E2E2] mb-10">
 					<div>
 						<Link href="/">SIMHOUSE</Link>
 					</div>
