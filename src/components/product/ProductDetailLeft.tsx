@@ -26,13 +26,15 @@ export default function ProductDetailLeft({ product }: { product: Product }) {
 				</ul>
 			</div>
 			<hr className="my-4" />
-			<div className="w-full rounded-xl overflow-hidden ">
+			<div className="w-full overflow-hidden ">
 				<h1 className="text-[22px] font-medium mb-6">Where you’ll play</h1>
-				<ProductMap
-					lat={product.Lat}
-					lng={product.Long}
-					hostid={product.HostID}
-				/>
+				<div className="rounded-xl overflow-hidden w-full ">
+					<ProductMap
+						lat={product.Lat}
+						lng={product.Long}
+						hostid={product.HostID}
+					/>
+				</div>
 			</div>
 			<hr className="my-4" />
 			<div>

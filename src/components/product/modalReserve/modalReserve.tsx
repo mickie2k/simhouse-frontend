@@ -1,7 +1,6 @@
 import { Product } from "@/utilities/type";
 import BookingSchedule from "./bookingSchedule";
-import { useContext, useEffect, useState } from "react";
-import { DateContext } from "../ProductDetail";
+import { useEffect, useState } from "react";
 
 export default function ModalReserve({
 	onClose,
@@ -15,7 +14,6 @@ export default function ModalReserve({
 	product: Product;
 }) {
 	const [total, setTotal] = useState<number>(0);
-	const { setDate } = useContext(DateContext);
 
 	useEffect(() => {
 		setTotal(product.PricePerHour * bookList.length);

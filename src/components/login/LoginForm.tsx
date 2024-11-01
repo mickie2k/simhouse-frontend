@@ -27,7 +27,7 @@ export default function LoginhtmlForm() {
 			}
 		);
 		if (response.status !== 200) {
-			alert("Login failed");
+			alert("Your username or password is incorrect");
 		}
 		if (response.status === 200) {
 			cookies.set("isAuth", "true");

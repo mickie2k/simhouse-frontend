@@ -1,9 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
-export default function LoginhtmlForm() {
-	const onSubmit = async () => {};
+export default function RegisterForm() {
+	const router = useRouter();
+	const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+
+		const formData = new FormData(event.currentTarget);
+		const formDataJson: { [key: string]: FormDataEntryValue } = {};
+		formData.forEach((value, key) => {
+			formDataJson[key] = value;
+		});
+
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}user/register`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json", // Set the content type to JSON
+				},
+				body: JSON.stringify(formDataJson),
+			}
+		);
+		if (response.status !== 200) {
+			alert("This username have already been taken");
+			return;
+		}
+		if (response.status === 200) {
+			// cookies.set("isAuth", "true");
+			// router.push("/");
+			alert("Register success");
+			router.push("/login");
+		}
+	};
 	return (
 		<section className="bg-white mt-7">
 			<div className="flex flex-col items-center  px-6 py-0 mx-auto md:h-full lg:py-0 ">
@@ -21,17 +53,17 @@ export default function LoginhtmlForm() {
 									Your Fullname
 								</label>
 								<input
-									type="username"
-									name="username"
-									id="username"
+									type="text"
+									name="fname"
+									id="fname"
 									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-t-lg  block w-full p-2.5 "
 									placeholder="First name"
 									required
 								/>
 								<input
-									type="username"
-									name="username"
-									id="username"
+									type="text"
+									name="lname"
+									id="lname"
 									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-b-lg  block w-full p-2.5 "
 									placeholder="Last name"
 									required

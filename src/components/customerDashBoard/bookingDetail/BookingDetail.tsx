@@ -2,13 +2,18 @@ import { BookingDetailSchedule } from "@/utilities/type";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { MdCancel, MdPending } from "react-icons/md";
 import { RiExternalLinkLine } from "react-icons/ri";
+import ProductMap from "@/components/product/ProductMap";
 import Image from "next/image";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 export default function BookingDetail({
 	bookingDetail,
+	cancelFunction,
+	justbook,
 }: {
 	bookingDetail: BookingDetailSchedule[];
+	cancelFunction: () => void;
+	justbook: string;
 }) {
 	const options = {
 		year: "numeric" as const,
@@ -35,7 +40,7 @@ export default function BookingDetail({
 	function bookingStatus() {
 		if (bookingDetail[0].StatusID === 1) {
 			return (
-				<div className="text-lg flex gap-2 items-start bg-yellow-50 rounded-lg py-3 justify-center">
+				<div className="text-lg flex gap-2 items-start bg-yellow-50 rounded-lg py-3 justify-center w-full">
 					<MdPending color="#FFD600" />
 					<h1 className="leading-6">Your reservation is pending.</h1>
 				</div>
@@ -47,11 +52,17 @@ export default function BookingDetail({
 					<h1 className="leading-6">Your reservation is confirmed.</h1>
 				</div>
 			);
-		} else if (bookingDetail[0].StatusID === 0) {
+		} else if (
+			bookingDetail[0].StatusID === 0 ||
+			bookingDetail[0].StatusID === 3
+		) {
 			return (
 				<div className="text-lg flex gap-2 items-start bg-neutral-100 text-neutral-500 rounded-lg py-3 justify-center">
 					<MdCancel color="#737373" />
-					<h1 className="leading-6">Your reservation is canceled.</h1>
+					<h1 className="leading-6">
+						Your reservation is canceled
+						{bookingDetail[0].StatusID === 0 && " by host"}.
+					</h1>
 				</div>
 			);
 		}
@@ -63,10 +74,11 @@ export default function BookingDetail({
 		return (
 			<div className="py-2">
 				{bookingStatus()}
-				<div className="grid grid-cols-3 gap-20 mt-10">
+
+				<div className="grid grid-cols-3 gap-x-20 gap-y-8 mt-10">
 					<div className="flex flex-col gap-6 col-span-2 overflow-hidden">
 						<Image
-							src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+							src={`${process.env.NEXT_PUBLIC_API_URL}image/noimage.jpg`}
 							width={400}
 							height={400}
 							alt={bookingDetail[0].SimID + "_image"}
@@ -102,6 +114,14 @@ export default function BookingDetail({
 						</div>
 					</div>
 					<div className="flex flex-col gap-6">
+						{justbook === "1" && (
+							<>
+								<h1 className="text-xl font-medium">
+									Thank you for your reservation.
+								</h1>
+								<hr />
+							</>
+						)}
 						<div className="flex flex-col gap-2">
 							<h1 className="text-xl font-medium">Address</h1>
 
@@ -151,10 +171,12 @@ export default function BookingDetail({
 						</div>
 						<hr />
 						<div className="flex flex-col gap-1">
-							{bookingDetail[0].StatusID === 0 ? (
+							{bookingDetail[0].StatusID === 0 ||
+							bookingDetail[0].StatusID === 3 ? (
 								<>
 									<small className="w-full text-xs text-neutral-400 font-extralight">
-										We're sorry, but your reservation has been canceled by host.
+										We&apos;re sorry, but your reservation has been canceled{" "}
+										{bookingDetail[0].StatusID === 0 && "by host"}.
 									</small>
 									<Link href={`/product/${bookingDetail[0].SimID}`}>
 										<div className="w-full text-white bg-primary1 hover:bg-primary1_hover  font-medium rounded-lg text-base px-5 py-3.5 text-center  ">
@@ -170,7 +192,7 @@ export default function BookingDetail({
 											: "You can't cancelling because it's confirmed."}
 									</small>
 									<button
-										type="submit"
+										onClick={cancelFunction}
 										className="w-full text-neutral-400 bg-white border-borderColor2 border hover:border-neutral-500 hover:text-neutral-800 focus:ring-4 focus:outline-none  font-light rounded-lg text-base px-5 py-3.5 text-center 
 										disabled:opacity-50 disabled:bg-borderColor2 disabled:text-neutral-800 disabled:hover:border-borderColor2 disabled:hover:text-neutral-800 "
 										disabled={bookingDetail[0].StatusID === 2}
@@ -179,6 +201,17 @@ export default function BookingDetail({
 									</button>
 								</>
 							)}
+						</div>
+					</div>
+					<hr className="col-span-3" />
+					<div className="w-full col-span-3">
+						<h1 className="text-[22px] font-medium mb-6">Where you’ll play</h1>
+						<div className=" rounded-2xl overflow-hidden">
+							<ProductMap
+								hostid={bookingDetail[0].HostID}
+								lat={bookingDetail[0].Lat}
+								lng={bookingDetail[0].Long}
+							/>
 						</div>
 					</div>
 				</div>

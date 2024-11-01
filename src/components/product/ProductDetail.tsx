@@ -102,21 +102,21 @@ export default function ProductDetail({ product }: { product: Product }) {
 				"
 				>
 					<Image
-						src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+						src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.firstimage}`}
 						width={400}
 						height={400}
 						alt={product.SimID + "_image"}
 						className="h-full w-full object-cover col-span-2 row-span-2"
 					/>
 					<Image
-						src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+						src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.secondimage}`}
 						width={400}
 						height={400}
 						alt={product.SimID + "_image"}
 						className="h-full w-full object-cover col-span-1 row-span-1"
 					/>
 					<Image
-						src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+						src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.thirdimage}`}
 						width={400}
 						height={400}
 						alt={product.SimID + "_image"}

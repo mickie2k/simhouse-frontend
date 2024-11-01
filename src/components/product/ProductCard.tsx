@@ -12,7 +12,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 		>
 			<div className="h-72 w-full bg-slate-600 rounded-xl overflow-hidden">
 				<Image
-					src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+					src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.firstimage}`}
 					width={400}
 					height={400}
 					alt={product.SimID + "_image"}

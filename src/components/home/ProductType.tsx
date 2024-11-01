@@ -11,7 +11,7 @@ export default function ProductType() {
 			<h2 className="text-3xl font-bold mb-6">Discover your racing type</h2>
 			<div className="grid grid-cols-2  gap-6">
 				<Link
-					href="/login"
+					href="/page/1/formula"
 					className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95"
 				>
 					<Image src={f1seat} width={700} alt="f1seat" className="w-96" />
@@ -22,7 +22,10 @@ export default function ProductType() {
 						</h3>
 					</div>
 				</Link>
-				<div className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95">
+				<Link
+					href="/page/1/gt"
+					className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95"
+				>
 					<Image src={GTseat} width={700} alt="f1seat" className="w-96" />
 					<div className="flex-col flex mt-2 items-center">
 						<Image src={GTlogo} width={155} alt="f1logo" className="w-36" />
@@ -30,7 +33,7 @@ export default function ProductType() {
 							GT RACING
 						</h3>
 					</div>
-				</div>
+				</Link>
 			</div>
 		</section>
 	);

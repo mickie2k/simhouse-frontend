@@ -23,19 +23,19 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 	function checkReservations() {
 		if (booking.StatusID === 1) {
 			return (
-				<div className="text-lg flex gap-2 items-start bg-yellow-50 rounded-lg py-2 justify-center">
+				<div className="text-lg flex gap-2 items-start bg-yellow-100 rounded-lg py-2 justify-center">
 					<MdPending color="#FFD600" />
 					<h1 className="leading-6">Your reservation is pending.</h1>
 				</div>
 			);
 		} else if (booking.StatusID === 2) {
 			return (
-				<div className="text-lg flex gap-2 items-start bg-green-50 rounded-lg py-2 justify-center">
+				<div className="text-lg flex gap-2 items-start bg-green-100 rounded-lg py-2 justify-center">
 					<IoIosCheckmarkCircle color="#04CF00" />
 					<h1 className="leading-6">Your reservation is confirmed.</h1>
 				</div>
 			);
-		} else if (booking.StatusID === 0) {
+		} else if (booking.StatusID === 0 || booking.StatusID === 3) {
 			return (
 				<div className="text-lg flex gap-2 items-start bg-neutral-100 text-neutral-500 rounded-lg py-2 justify-center">
 					<MdCancel color="#737373" />
@@ -53,7 +53,7 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 			>
 				<div className="h-48 w-48 bg-slate-600 rounded-lg overflow-hidden">
 					<Image
-						src="https://simracingcockpit.gg/wp-content/uploads/2021/10/my-sim-racing-setup.jpg"
+						src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.firstimage}`}
 						width={300}
 						height={300}
 						alt={product.SimID + "_image"}
@@ -63,12 +63,7 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 				<div className="flex flex-col grow justify-between ">
 					<div className="text-xl text-black2">
 						<h3 className="text-xl">{product.SimListName}</h3>
-						<div className="text-secondText text-sm">
-							<span>{product.ModelName}</span>
 
-							<span aria-hidden="true">&nbsp;· &nbsp;</span>
-							<span>{product.BrandName}</span>
-						</div>
 						{/* <div className="text-secondText text-sm">
 						<span>Ladkrabang</span>
 						<span aria-hidden="true">, </span>
@@ -107,7 +102,7 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 					</div>
 
 					<div>
-						<h1 className="text-xl font-medium">
+						<h1 className="text-lg font-medium">
 							<span className="text-base font-light">Totals</span> : $
 							{booking.TotalPrice}
 						</h1>

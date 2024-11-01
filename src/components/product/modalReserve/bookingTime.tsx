@@ -58,7 +58,7 @@ const BookingTime = ({
 	return (
 		<button
 			onClick={handleClick}
-			className={`flex flex-col w-[74px] bg-transparent border-borderColor2 border text-black rounded-lg justify-center items-center py-3 cursor-pointer disabled:bg-neutral-300 disabled:opacity-40 ${
+			className={`flex flex-col w-[74px] bg-transparent border-borderColor2 border text-black rounded-lg justify-center items-center py-3 cursor-pointer disabled:bg-neutral-300 disabled:opacity-40 disabled:cursor-default ${
 				isClicked ? "border-primary1 text-primary1" : ""
 			}`}
 			disabled={schedule.Available === 0}

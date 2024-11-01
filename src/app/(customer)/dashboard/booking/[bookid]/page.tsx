@@ -1,14 +1,20 @@
 "use client";
 import BookingDetail from "@/components/customerDashBoard/bookingDetail/BookingDetail";
-
+import LoadingComponent from "@/components/loading/LoadingComponent";
+import { BookingDetailSchedule } from "@/utilities/type";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 export default function BookingPage({
 	params,
 }: {
 	params: { bookid: number };
 }) {
-	const [bookingDetail, setBookingDetail] = useState([]);
+	const [bookingDetail, setBookingDetail] = useState<BookingDetailSchedule[]>(
+		[]
+	);
 	const [found, setFound] = useState(false);
+	const [cancel, setCancel] = useState(false);
+	const justbook = useSearchParams().get("justbook") || "0";
 
 	useEffect(() => {
 		const fetchBookingDetail = async () => {
@@ -31,13 +37,43 @@ export default function BookingPage({
 		};
 
 		fetchBookingDetail();
-	}, [params.bookid]);
+	}, [params.bookid, cancel]);
+
+	async function cancelBooking() {
+		const userConfirmed = confirm("Are you want to cancellation?");
+		if (userConfirmed) {
+			// User clicked OK
+			// Perform the action
+
+			const res = await fetch(
+				`${process.env.NEXT_PUBLIC_API_URL}user/booking/${bookingDetail[0].BookingID}`,
+				{
+					method: "DELETE",
+					credentials: "include",
+				}
+			);
+			if (res.status == 200) {
+				const data = await res.json();
+				if (data.status) {
+					console.log("Booking canceled");
+				} else {
+					alert("Booking cancel failed");
+				}
+				setCancel(!cancel);
+			}
+		}
+	}
+
 	return (
-		<div className="max-w-6xl mx-auto mt-6">
+		<div className="max-w-6xl mx-auto mt-6  ">
 			{found ? (
-				<BookingDetail bookingDetail={bookingDetail} />
+				<BookingDetail
+					bookingDetail={bookingDetail}
+					cancelFunction={cancelBooking}
+					justbook={justbook}
+				/>
 			) : (
-				<div className="text-center">Loading...</div>
+				<LoadingComponent />
 			)}
 		</div>
 	);

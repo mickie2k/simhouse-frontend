@@ -15,6 +15,9 @@ export type Product = {
 	Lat: number;
 	Long: number;
 	Htel : string;
+	firstimage: string;
+	secondimage: string;
+	thirdimage: string;
 };
 
 export type Schedule = {
@@ -34,6 +37,7 @@ export type Booking = {
 	CustomerID: number;
 	SimID: number;
 	Statusname: string;
+	firstimage: string;
 };
 export type BookingDetailSchedule = {
 	BookingID: number;
@@ -55,4 +59,5 @@ export type BookingDetailSchedule = {
 	Lat: number;
 	Long: number;
 	HTel: string;
+	firstimage: string;
 };
