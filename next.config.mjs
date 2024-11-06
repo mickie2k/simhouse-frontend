@@ -7,7 +7,7 @@ const nextConfig = {
 		},
 	],
 	images: {
-		domains: ["simracingcockpit.gg", "localhost"], // Add your allowed domains here
+		domains: ["simracingcockpit.gg", "localhost" ,"simhouse-backend-production.up.railway.app"], // Add your allowed domains here
 	},
 };
 
