@@ -19,7 +19,7 @@ export default async function BookingPage({
 	const { bookid } = await params;
 	const { justbook = "0" } = await searchParams;
 
-	const headersList = headers();
+	const headersList = await headers();
 	const cookie = (await headersList).get("cookie") || "";
 
 	const res = await fetch(
