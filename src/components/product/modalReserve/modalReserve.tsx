@@ -1,4 +1,4 @@
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 import BookingSchedule from "./bookingSchedule";
 import { useEffect, useState } from "react";
 

@@ -46,7 +46,6 @@ export default function Navbar() {
 			credentials: "include",
 		});
 		const res = await req.json();
-		console.log(res);
 		setIsLogin(false);
 		setUsername("");
 		cookies.remove("isAuth");

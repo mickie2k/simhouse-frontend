@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ProductCard from "../product/ProductCard";
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 
 export default async function AllProduct() {
 	const res = await fetch(
@@ -14,7 +14,6 @@ export default async function AllProduct() {
 		return;
 	}
 	const products = await res.json();
-	// console.log(products);
 
 	return (
 		<section>

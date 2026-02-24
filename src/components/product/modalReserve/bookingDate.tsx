@@ -1,5 +1,5 @@
 import BookingTime from "./bookingTime";
-import { Schedule } from "@/utilities/type";
+import { Schedule } from "@/types";
 export default function BookingDate({
 	addList,
 	bookList,

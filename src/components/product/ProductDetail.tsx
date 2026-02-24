@@ -1,5 +1,5 @@
 "use client";
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 import { createContext, useState } from "react";
 import Image from "next/image";
 import SaveProduct from "./SaveProduct";

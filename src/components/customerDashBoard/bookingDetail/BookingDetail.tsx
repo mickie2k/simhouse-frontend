@@ -1,4 +1,4 @@
-import { BookingDetailSchedule } from "@/utilities/type";
+import { BookingDetailSchedule } from "@/types";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { MdCancel, MdPending } from "react-icons/md";
 import { RiExternalLinkLine } from "react-icons/ri";
@@ -6,13 +6,13 @@ import ProductMap from "@/components/product/ProductMap";
 import Image from "next/image";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
+import CancelBookingButton from "./CancelBookingButton";
+
 export default function BookingDetail({
 	bookingDetail,
-	cancelFunction,
 	justbook,
 }: {
 	bookingDetail: BookingDetailSchedule[];
-	cancelFunction: () => void;
 	justbook: string;
 }) {
 	const options = {
@@ -191,14 +191,18 @@ export default function BookingDetail({
 											? "Your reservation will be canceled immediately."
 											: "You can't cancelling because it's confirmed."}
 									</small>
-									<button
-										onClick={cancelFunction}
-										className="w-full text-neutral-400 bg-white border-borderColor2 border hover:border-neutral-500 hover:text-neutral-800 focus:ring-4 focus:outline-none  font-light rounded-lg text-base px-5 py-3.5 text-center 
-										disabled:opacity-50 disabled:bg-borderColor2 disabled:text-neutral-800 disabled:hover:border-borderColor2 disabled:hover:text-neutral-800 "
-										disabled={bookingDetail[0].StatusID === 2}
-									>
-										Cancellations
-									</button>
+									{bookingDetail[0].StatusID === 1 ? (
+										<CancelBookingButton
+											bookingId={bookingDetail[0].BookingID}
+										/>
+									) : (
+										<button
+											className="w-full text-neutral-400 bg-white border-borderColor2 border hover:border-neutral-500 hover:text-neutral-800 focus:ring-4 focus:outline-none font-light rounded-lg text-base px-5 py-3.5 text-center disabled:opacity-50 disabled:bg-borderColor2 disabled:text-neutral-800 disabled:hover:border-borderColor2 disabled:hover:text-neutral-800"
+											disabled
+										>
+											Cancellations
+										</button>
+									)}
 								</>
 							)}
 						</div>

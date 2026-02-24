@@ -1,4 +1,4 @@
-import { Booking } from "@/utilities/type";
+import { Booking } from "@/types";
 import React from "react";
 import BookingCard from "./BookingCard";
 interface CustomerDashBoardProps {

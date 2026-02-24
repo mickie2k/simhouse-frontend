@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import BookingDate from "./bookingDate";
-import { Schedule } from "@/utilities/type";
+import { Schedule } from "@/types";
 
 export default function BookingSchedule({
 	addList,
@@ -19,7 +19,7 @@ export default function BookingSchedule({
 		fetch(`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}/booking`)
 			.then((res) => {
 				if (!res.ok) {
-					console.log(`HTTP error! Status: ${res.status}`);
+					console.error(`HTTP error! Status: ${res.status}`);
 				}
 				return res.json();
 			})

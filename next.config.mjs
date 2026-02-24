@@ -7,7 +7,20 @@ const nextConfig = {
 		},
 	],
 	images: {
-		domains: ["simracingcockpit.gg", "localhost" ,"simhouse-backend-production.up.railway.app"], // Add your allowed domains here
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "simracingcockpit.gg",
+			},
+			{
+				protocol: "http",
+				hostname: "localhost",
+			},
+			{
+				protocol: "https",
+				hostname: "simhouse-backend-production.up.railway.app",
+			},
+		],
 	},
 };
 

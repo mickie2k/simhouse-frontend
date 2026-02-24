@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Schedule } from "@/utilities/type";
+import { Schedule } from "@/types";
 import { DateContext } from "../ProductDetail";
 
 const BookingTime = ({

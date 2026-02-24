@@ -37,7 +37,6 @@ export default function Auth({
 				const data = await response.json();
 
 				if (data) {
-					console.log(data.Username);
 					setUsername(data.Username);
 					setIsLogin(true);
 					cookies.set("isAuth", "true");

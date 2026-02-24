@@ -1,29 +1,37 @@
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
+import type { Metadata } from "next";
 
-export default async function TypePage({
-	params,
-}: {
-	params: { page: number; type: string };
-}) {
+type Props = { params: Promise<{ page: number; type: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { type } = await params;
+	const title = type === "formula" ? "Formula Simulators" : "GT Racing Simulators";
+	return {
+		title,
+		description: `Browse our collection of ${title.toLowerCase()}`,
+	};
+}
+
+export default async function TypePage({ params }: Props) {
+	const { page, type } = await params;
+	
 	let typeID = 0;
-	if (params.type === "formula") {
+	if (type === "formula") {
 		typeID = 1;
-	} else if (params.type === "gt") {
+	} else if (type === "gt") {
 		typeID = 2;
 	}
 
-	console.log(params.type);
 	const res = await fetch(
 		process.env.NEXT_PUBLIC_API_URL +
-			`product/all?limit=30&page=${params.page}&type=${typeID}`,
+			`product/all?limit=30&page=${page}&type=${typeID}`,
 		{
 			cache: "no-store",
 		}
 	);
 	if (res?.status !== 200) {
-		console.error("Failed to fetch products");
-		return;
+		throw new Error("Failed to fetch products");
 	}
 	const products = await res.json();
 

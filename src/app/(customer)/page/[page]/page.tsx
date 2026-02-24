@@ -1,8 +1,14 @@
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
+import type { Metadata } from "next";
 
-export default async function Page({ params }: { params: { page: number } }) {
-	const page = params.page;
+export const metadata: Metadata = {
+	title: "Browse Simulators",
+	description: "Explore our collection of racing simulators",
+};
+
+export default async function Page({ params }: { params: Promise<{ page: number }> }) {
+	const { page } = await params;
 
 	const res = await fetch(
 		process.env.NEXT_PUBLIC_API_URL + "product/all?limit=30&page=" + page,
@@ -11,11 +17,9 @@ export default async function Page({ params }: { params: { page: number } }) {
 		}
 	);
 	if (res?.status !== 200) {
-		console.error("Failed to fetch products");
-		return;
+		throw new Error("Failed to fetch products");
 	}
 	const products = await res.json();
-	console.log(products);
 
 	return (
 		<main className="min-h-full w-full relative ">

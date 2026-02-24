@@ -1,11 +1,37 @@
-import { Product } from "@/utilities/type";
+import { Product } from "@/types";
 import ProductDetail from "@/components/product/ProductDetail";
-export default async function ProductPage({
-	params,
-}: {
-	params: { id: number };
-}) {
-	const id = params.id;
+import type { Metadata } from "next";
+
+type Props = { params: Promise<{ id: number }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { id } = await params;
+	
+	try {
+		const res = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
+			{ cache: "no-store" }
+		);
+		if (res.ok) {
+			const product: Product = await res.json();
+			return {
+				title: product.SimListName,
+				description: product.ListDescription,
+			};
+		}
+	} catch (error) {
+		// Fallback metadata if fetch fails
+	}
+	
+	return {
+		title: "Simulator Details",
+		description: "View simulator details and book your session",
+	};
+}
+
+export default async function ProductPage({ params }: Props) {
+	const { id } = await params;
+	
 	const res = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
 		{
@@ -14,11 +40,10 @@ export default async function ProductPage({
 		}
 	);
 	if (res.status !== 200) {
-		console.error("Failed to fetch product");
-		return;
+		throw new Error("Failed to fetch product");
 	}
-	const productPromise: Promise<Product> = await res.json();
-	const [product] = await Promise.all([productPromise]);
+	
+	const product: Product = await res.json();
 
 	return (
 		<>

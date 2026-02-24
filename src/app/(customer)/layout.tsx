@@ -1,30 +1,19 @@
-import type { Metadata } from "next";
-import { overpass, inter } from "@/utilities/font";
-import Header from "@/components/navbar/navbar";
-import "../globals.css";
+import Header from "@/components/navbar/Navbar";
 import Auth from "@/context/AuthContext";
 
-export const metadata: Metadata = {
-	title: "Simhouse",
-	description: "Racing Simulator Booking Platform",
-};
-
-export default function RootLayout({
+export default function CustomerLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body
-				id="_next"
-				className={`${overpass.className} ${overpass.variable} ${inter.variable}  antialiased min-h-screen`}
-			>
+		<>
+			<div id="_next">
 				<Auth>
 					<Header />
 				</Auth>
 				{children}
-			</body>
-		</html>
+			</div>
+		</>
 	);
 }

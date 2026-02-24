@@ -1,4 +1,4 @@
-import { Booking } from "@/utilities/type";
+import { Booking } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { MdPending, MdCancel } from "react-icons/md";
