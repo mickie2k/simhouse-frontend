@@ -1,26 +1,32 @@
+"use client";
+
 import CustomerDashBoard from "@/components/customerDashBoard/CustomerDashBoard";
-import { headers } from "next/headers";
-import type { Metadata } from "next";
+import { axiosJWTInstance } from "@/lib/http";
+import { useEffect, useState } from "react";
+import LoadingComponent from "@/components/loading/LoadingComponent";
 
-export const metadata: Metadata = {
-	title: "My Dashboard",
-	description: "View and manage your simulator bookings",
-};
+export default function DashBoard() {
+	const [data, setData] = useState([]);
+	const [isLoading, setIsLoading] = useState(true);
 
-export default async function DashBoard() {
-	let data = [];
+	useEffect(() => {
+		const fetchBookings = async () => {
+			try {
+				const response = await axiosJWTInstance.get("user/booking");
+				setData(response.data);
+			} catch (error) {
+				console.error("Failed to fetch bookings:", error);
+				setData([]);
+			} finally {
+				setIsLoading(false);
+			}
+		};
 
-	const headersList = await headers();
+		fetchBookings();
+	}, []);
 
-	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}user/booking`, {
-		method: "GET",
-		credentials: "include",
-		headers: headersList,
-		cache: "no-store",
-	});
-
-	if (res.status === 200) {
-		data = await res.json();
+	if (isLoading) {
+		return <LoadingComponent />;
 	}
 
 	return <CustomerDashBoard booking={data} />;

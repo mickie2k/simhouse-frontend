@@ -1,39 +1,34 @@
-/**
- * My Simulators (Light) page route
- * Displays all simulators owned by the host
- */
+"use client";
 import MySimulators from "@/components/hostDashboard/MySimulators";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import type { Metadata } from "next";
+import { axiosJWTInstance } from "@/lib/http";
+import { useEffect, useState } from "react";
+import LoadingComponent from "@/components/loading/LoadingComponent";
+import type { Product } from "@/types";
 
-export const metadata: Metadata = {
-    title: "My Simulators",
-    description: "Manage your simulator listings and schedules",
-};
+export default function HostingPage() {
+    const [simulators, setSimulators] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-export default async function HostingPage() {
-    // Get user session
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token");
+    useEffect(() => {
+        const fetchSimulators = async () => {
+            try {
+                // TODO: Replace with actual API endpoint for host's simulators (e.g., /product/host/:id)
+                const response = await axiosJWTInstance.get<Product[]>("product/host/:id");
+                setSimulators(response.data);
+            } catch (error) {
+                console.error("Failed to fetch simulators:", error);
+                setSimulators([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    if (!token) {
-        redirect("/login");
+        fetchSimulators();
+    }, []);
+
+    if (isLoading) {
+        return <LoadingComponent />;
     }
-
-    // Fetch host's simulators
-    // TODO: Replace with actual API endpoint for host's simulators (e.g., /product/host/:id)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}product/host/:id`, {
-        method: "GET",
-        cache: "no-store",
-    });
-
-    if (!res.ok) {
-        // Throw error to trigger error boundary
-        throw new Error("Failed to fetch simulators");
-    }
-
-    const simulators = await res.json();
 
     return <MySimulators simulators={simulators} />;
 }

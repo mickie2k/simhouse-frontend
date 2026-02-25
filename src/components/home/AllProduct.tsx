@@ -6,12 +6,11 @@ export default async function AllProduct() {
 	const res = await fetch(
 		process.env.NEXT_PUBLIC_API_URL + "product/all?limit=15",
 		{
-			cache: "no-store",
+			next: { revalidate: 300 }, // Revalidate every 5 minutes
 		}
 	);
-	if (res.status !== 200) {
-		console.error("Failed to fetch products");
-		return;
+	if (!res.ok) {
+		throw new Error("Failed to fetch products");
 	}
 	const products = await res.json();
 

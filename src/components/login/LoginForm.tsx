@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { axiosInstance } from "@/lib/http";
 import cookies from "js-cookie";
+
 export default function LoginhtmlForm() {
 	const router = useRouter();
 	const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -15,23 +17,12 @@ export default function LoginhtmlForm() {
 			formDataJson[key] = value;
 		});
 
-		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}user/login`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json", // Set the content type to JSON
-				},
-				credentials: "include",
-				body: JSON.stringify(formDataJson),
-			}
-		);
-		if (response.status !== 200) {
-			alert("Your username or password is incorrect");
-		}
-		if (response.status === 200) {
+		try {
+			await axiosInstance.post("user/login", formDataJson);
 			cookies.set("isAuth", "true");
 			router.push("/");
+		} catch (error) {
+			alert("Your username or password is incorrect");
 		}
 	};
 	return (

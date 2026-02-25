@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	try {
 		const res = await fetch(
 			`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
-			{ cache: "no-store" }
+			{ next: { revalidate: 600 } } // Revalidate every 10 minutes
 		);
 		if (res.ok) {
 			const product: Product = await res.json();
@@ -35,11 +35,10 @@ export default async function ProductPage({ params }: Props) {
 	const res = await fetch(
 		`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
 		{
-			cache: "no-store",
-			// next: { revalidate: 3600 },
+			next: { revalidate: 600 }, // Revalidate every 10 minutes
 		}
 	);
-	if (res.status !== 200) {
+	if (!res.ok) {
 		throw new Error("Failed to fetch product");
 	}
 	

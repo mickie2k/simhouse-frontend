@@ -5,45 +5,44 @@ import { MdPending, MdCancel } from "react-icons/md";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 
 export default async function BookingCard({ booking }: { booking: Booking }) {
-	const res = await fetch(
-		`${process.env.NEXT_PUBLIC_API_URL}product/id/${booking.SimID}`,
-		{
-			method: "GET",
+	let product = null;
+
+	try {
+		const res = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}product/id/${booking.SimID}`,
+			{
+				next: { revalidate: 600 }, // Cache for 10 minutes
+			}
+		);
+		if (res.ok) {
+			product = await res.json();
 		}
-	);
-	const product = await res.json();
+	} catch (error) {
+		console.error("Failed to fetch product:", error);
+	}
+
+	// Fallback if product fetch fails
+	if (!product) {
+		return (
+			<div className="flex flex-row gap-4 border-borderColor1 border rounded-xl p-4 bg-gray-50">
+				<div className="h-48 w-48 bg-gray-300 rounded-lg flex items-center justify-center">
+					<span className="text-gray-500">Image unavailable</span>
+				</div>
+				<div className="flex flex-col grow justify-between">
+					<h3 className="text-xl">Booking #{booking.BookingID}</h3>
+					<p className="text-sm text-gray-500">Product details unavailable</p>
+					<StatusBadge statusId={booking.StatusID} />
+				</div>
+			</div>
+		);
+	}
 
 	const options = {
 		year: "numeric" as const,
-		month: "short" as const, // 'short' gives you the abbreviated month name
+		month: "short" as const,
 		day: "numeric" as const,
-		timeZone: "Asia/Bangkok", // Change to your desired timezone
+		timeZone: "Asia/Bangkok",
 	};
-
-	function checkReservations() {
-		if (booking.StatusID === 1) {
-			return (
-				<div className="text-lg flex gap-2 items-start bg-yellow-100 rounded-lg py-2 justify-center">
-					<MdPending color="#FFD600" />
-					<h1 className="leading-6">Your reservation is pending.</h1>
-				</div>
-			);
-		} else if (booking.StatusID === 2) {
-			return (
-				<div className="text-lg flex gap-2 items-start bg-green-100 rounded-lg py-2 justify-center">
-					<IoIosCheckmarkCircle color="#04CF00" />
-					<h1 className="leading-6">Your reservation is confirmed.</h1>
-				</div>
-			);
-		} else if (booking.StatusID === 0 || booking.StatusID === 3) {
-			return (
-				<div className="text-lg flex gap-2 items-start bg-neutral-100 text-neutral-500 rounded-lg py-2 justify-center">
-					<MdCancel color="#737373" />
-					<h1 className="leading-6">Your reservation is canceled.</h1>
-				</div>
-			);
-		}
-	}
 
 	return (
 		<div>
@@ -63,15 +62,6 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 				<div className="flex flex-col grow justify-between ">
 					<div className="text-xl text-black2">
 						<h3 className="text-xl">{product.SimListName}</h3>
-
-						{/* <div className="text-secondText text-sm">
-						<span>Ladkrabang</span>
-						<span aria-hidden="true">, </span>
-						<span>Bangkok</span>
-
-						<span aria-hidden="true">, </span>
-						<span>TH</span>
-					</div> */}
 					</div>
 					<div>
 						<div className="flex w-full">
@@ -107,9 +97,36 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 							{booking.TotalPrice}
 						</h1>
 					</div>
-					{checkReservations()}
+					<StatusBadge statusId={booking.StatusID} />
 				</div>
 			</Link>
 		</div>
 	);
+}
+
+// Extract status badge to separate component for cleaner code
+function StatusBadge({ statusId }: { statusId: number }) {
+	if (statusId === 1) {
+		return (
+			<div className="text-lg flex gap-2 items-start bg-yellow-100 rounded-lg py-2 justify-center">
+				<MdPending color="#FFD600" />
+				<h1 className="leading-6">Your reservation is pending.</h1>
+			</div>
+		);
+	} else if (statusId === 2) {
+		return (
+			<div className="text-lg flex gap-2 items-start bg-green-100 rounded-lg py-2 justify-center">
+				<IoIosCheckmarkCircle color="#04CF00" />
+				<h1 className="leading-6">Your reservation is confirmed.</h1>
+			</div>
+		);
+	} else if (statusId === 0 || statusId === 3) {
+		return (
+			<div className="text-lg flex gap-2 items-start bg-neutral-100 text-neutral-500 rounded-lg py-2 justify-center">
+				<MdCancel color="#737373" />
+				<h1 className="leading-6">Your reservation is canceled.</h1>
+			</div>
+		);
+	}
+	return null;
 }

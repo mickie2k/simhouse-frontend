@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { axiosJWTInstance } from "@/lib/http";
 
 export default function CancelBookingButton({
 	bookingId,
@@ -14,20 +15,14 @@ export default function CancelBookingButton({
 		if (userConfirmed) {
 			setIsLoading(true);
 			try {
-				const res = await fetch(
-					`${process.env.NEXT_PUBLIC_API_URL}user/booking/${bookingId}`,
-					{
-						method: "DELETE",
-						credentials: "include",
-					}
+				const response = await axiosJWTInstance.delete<{ status: boolean }>(
+					`user/booking/${bookingId}`
 				);
-				if (res.status == 200) {
-					const data = await res.json();
-					if (data.status) {
-						window.location.reload();
-					} else {
-						alert("Booking cancel failed");
-					}
+				const data = response.data;
+				if (data.status) {
+					window.location.reload();
+				} else {
+					alert("Booking cancel failed");
 				}
 			} catch (error) {
 				console.error("Error canceling booking:", error);

@@ -5,7 +5,9 @@ import { useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthContext } from "@/context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
+import { axiosJWTInstance } from "@/lib/http";
 import cookies from "js-cookie";
+
 export default function Navbar() {
 	const pathname = usePathname();
 	const router = useRouter();
@@ -41,16 +43,16 @@ export default function Navbar() {
 		setisMenu(false);
 	}
 	async function logout() {
-		const req = await fetch(`${process.env.NEXT_PUBLIC_API_URL}user/logout`, {
-			method: "POST",
-			credentials: "include",
-		});
-		const res = await req.json();
-		setIsLogin(false);
-		setUsername("");
-		cookies.remove("isAuth");
-		alert("Logout success");
-		router.push("/");
+		try {
+			await axiosJWTInstance.post("user/logout");
+			setIsLogin(false);
+			setUsername("");
+			cookies.remove("isAuth");
+			alert("Logout success");
+			router.push("/");
+		} catch (error) {
+			alert("Logout failed");
+		}
 	}
 
 	function loginComponent() {

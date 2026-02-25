@@ -1,46 +1,52 @@
+"use client";
+
 import BookingDetail from "@/components/customerDashBoard/bookingDetail/BookingDetail";
 import { BookingDetailSchedule } from "@/types";
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
+import { axiosJWTInstance } from "@/lib/http";
+import { useParams, useSearchParams, notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import LoadingComponent from "@/components/loading/LoadingComponent";
 
-export const metadata: Metadata = {
-	title: "Booking Details",
-	description: "View your booking details and schedule",
-};
+export default function BookingPage() {
+	const params = useParams();
+	const searchParams = useSearchParams();
+	const bookid = params.bookid as string;
+	const justbook = searchParams.get("justbook") || "0";
 
-export default async function BookingPage({
-	params,
-	searchParams,
-}: {
-	params: Promise<{ bookid: string }>;
-	searchParams: Promise<{ justbook?: string }>;
-}) {
-	const { bookid } = await params;
-	const { justbook = "0" } = await searchParams;
+	const [bookingDetail, setBookingDetail] = useState<BookingDetailSchedule[] | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [notFoundError, setNotFoundError] = useState(false);
 
-	const headersList = await headers();
-	const cookie = (await headersList).get("cookie") || "";
+	useEffect(() => {
+		const fetchBookingDetail = async () => {
+			try {
+				const response = await axiosJWTInstance.get<BookingDetailSchedule[]>(
+					`user/booking/${bookid}/schedule`
+				);
+				
+				if (!response.data || response.data.length === 0) {
+					setNotFoundError(true);
+				} else {
+					setBookingDetail(response.data);
+				}
+			} catch (error) {
+				console.error("Failed to fetch booking details:", error);
+				setNotFoundError(true);
+			} finally {
+				setIsLoading(false);
+			}
+		};
 
-	const res = await fetch(
-		`${process.env.NEXT_PUBLIC_API_URL}user/booking/${bookid}/schedule`,
-		{
-			method: "GET",
-			credentials: "include",
-			headers: {
-				Cookie: cookie,
-			},
-			cache: "no-store",
+		if (bookid) {
+			fetchBookingDetail();
 		}
-	);
+	}, [bookid]);
 
-	if (res.status !== 200) {
-		notFound();
+	if (isLoading) {
+		return <LoadingComponent />;
 	}
 
-	const bookingDetail: BookingDetailSchedule[] = await res.json();
-
-	if (!bookingDetail || bookingDetail.length === 0) {
+	if (notFoundError || !bookingDetail) {
 		notFound();
 	}
 

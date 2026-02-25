@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useEffect, useState } from "react";
+import { axiosJWTInstance } from "@/lib/http";
 import cookies from "js-cookie";
 
 interface AuthContextType {
@@ -24,17 +25,11 @@ export default function Auth({
 	useEffect(() => {
 		const fetchUsername = async () => {
 			try {
-				const response = await fetch(
-					`${process.env.NEXT_PUBLIC_API_URL}user/username`,
-					{
-						method: "GET",
-						credentials: "include", // Include credentials if using cookies
-					}
+				const response = await axiosJWTInstance.get<{ Username: string }>(
+					"user/username",
+					{ skipAuthRedirect: true }
 				);
-				if (response.status !== 200) {
-					throw new Error("Failed to fetch username");
-				}
-				const data = await response.json();
+				const data = response.data;
 
 				if (data) {
 					setUsername(data.Username);

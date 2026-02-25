@@ -7,7 +7,8 @@ import {
 	useState,
 } from "react";
 import { DateContext } from "./ProductDetail";
-import { checkisLoginByCookie } from "@/utilities/auth";
+import { checkisLoginByCookie } from "@/lib/auth";
+import { axiosJWTInstance } from "@/lib/http";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "../loading/LoadingComponent";
 
@@ -47,34 +48,34 @@ export default function ProductDetailRight({
 		isLoading(true);
 		if (checkisLoginByCookie() === false) {
 			alert("Please login first");
+			isLoading(false);
 			return;
 		}
-		const request = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}user/booking`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json", // Set the content type to JSON
-				},
-				credentials: "include",
-				body: JSON.stringify({
-					simid: product.SimID,
-					scheduleid: bookList,
-				}),
-			}
-		);
 
-		const data = await request.json();
-		isLoading(false);
-		if (request.status == 200 && data.message) {
-			router.push(`/dashboard/booking/${data.bookingid}?justbook=1`);
-			return;
-		} else if (request.status == 400) {
-			alert(data.message);
-			return;
-		} else if (request.status !== 200) {
-			alert("Booking failed");
-			return;
+		try {
+			const response = await axiosJWTInstance.post<{
+				message?: string;
+				bookingid?: number;
+			}>("user/booking", {
+				simid: product.SimID,
+				scheduleid: bookList,
+			});
+
+			const data = response.data;
+			isLoading(false);
+
+			if (data.message && data.bookingid) {
+				router.push(`/dashboard/booking/${data.bookingid}?justbook=1`);
+			} else {
+				alert("Booking failed");
+			}
+		} catch (error: any) {
+			isLoading(false);
+			if (error.response?.status === 400) {
+				alert(error.response.data.message || "Booking failed");
+			} else {
+				alert("Booking failed");
+			}
 		}
 	}
 	return (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { axiosInstance } from "@/lib/http";
 
 export default function RegisterForm() {
 	const router = useRouter();
@@ -15,25 +16,12 @@ export default function RegisterForm() {
 			formDataJson[key] = value;
 		});
 
-		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}user/register`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json", // Set the content type to JSON
-				},
-				body: JSON.stringify(formDataJson),
-			}
-		);
-		if (response.status !== 200) {
-			alert("This username have already been taken");
-			return;
-		}
-		if (response.status === 200) {
-			// cookies.set("isAuth", "true");
-			// router.push("/");
+		try {
+			await axiosInstance.post("user/register", formDataJson);
 			alert("Register success");
 			router.push("/login");
+		} catch (error) {
+			alert("This username have already been taken");
 		}
 	};
 	return (
