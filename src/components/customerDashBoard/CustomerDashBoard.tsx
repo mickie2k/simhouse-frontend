@@ -13,7 +13,7 @@ const CustomerDashBoard: React.FC<CustomerDashBoardProps> = ({ booking }) => {
 			</div>
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4  ">
 				{booking.map((book) => (
-					<BookingCard key={book.BookingID} booking={book} />
+					<BookingCard key={book.id} booking={book} />
 				))}
 			</div>
 		</div>

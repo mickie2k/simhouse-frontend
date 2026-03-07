@@ -16,8 +16,8 @@ export default function ModalReserve({
 	const [total, setTotal] = useState<number>(0);
 
 	useEffect(() => {
-		setTotal(product.PricePerHour * bookList.length);
-	}, [bookList, product.PricePerHour]);
+		setTotal(product.pricePerHour * bookList.length);
+	}, [bookList, product.pricePerHour]);
 
 	function addList(id: number) {
 		if (bookList.find((item) => item === id)) {
@@ -68,11 +68,11 @@ export default function ModalReserve({
 					</div>
 				</div>
 				{/* <h1 className="text-xl font-medium">Pick Date/Time</h1> */}
-				<BookingSchedule
-					addList={addList}
-					bookList={bookList}
-					id={product.SimID}
-				/>
+			<BookingSchedule
+				addList={addList}
+				bookList={bookList}
+				id={product.id}
+			/>
 				<div className="flex justify-between h-1/5">
 					<h6 className="text-base font-medium">
 						Total

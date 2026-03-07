@@ -34,11 +34,11 @@ export default function ProductDetailRight({
 
 	const formattedDate = new Date(date).toLocaleDateString("en-US", options);
 	useEffect(() => {
-		setTotal(product.PricePerHour * bookList.length);
+		setTotal(product.pricePerHour * bookList.length);
 		if (bookList.length === 0) {
 			setDate("");
 		}
-	}, [bookList, product.PricePerHour, setDate]);
+	}, [bookList, product.pricePerHour, setDate]);
 
 	function onClickDate() {
 		setModal(true);
@@ -53,19 +53,19 @@ export default function ProductDetailRight({
 		}
 
 		try {
-			const response = await axiosJWTInstance.post<{
-				message?: string;
-				bookingid?: number;
-			}>("user/booking", {
-				simid: product.SimID,
-				scheduleid: bookList,
-			});
+		const response = await axiosJWTInstance.post<{
+			message?: string;
+			bookingId?: number;
+		}>("booking", {
+			simId: product.id,
+			scheduleId: bookList,
+		});
 
 			const data = response.data;
 			isLoading(false);
 
-			if (data.message && data.bookingid) {
-				router.push(`/dashboard/booking/${data.bookingid}?justbook=1`);
+		if (data.message && data.bookingId) {
+				router.push(`/dashboard/booking/${data.bookingId}?justbook=1`);
 			} else {
 				alert("Booking failed");
 			}
@@ -83,10 +83,10 @@ export default function ProductDetailRight({
 			{loading && <LoadingComponent />}
 			<div className="w-1/3 sticky h-fit  top-28">
 				<div className="rounded-xl border p-6 items-center border-gray-200 flex flex-col gap-4 shadow-[0px_6px_16px_rgba(0,0,0,0.1)]">
-					<h4 className="text-xl text-start w-full font-medium text-black2">
-						${product.PricePerHour}
-						<span className="font-light text-secondText text-base"> / hrs</span>
-					</h4>
+				<h4 className="text-xl text-start w-full font-medium text-black2">
+					${product.pricePerHour}
+					<span className="font-light text-secondText text-base"> / hrs</span>
+				</h4>
 					<button
 						className="w-full text-start text-sm group border font-normal text-gray-500 border-gray-300 rounded-lg grid grid-cols-2  hover:border-black2"
 						onClick={onClickDate}
@@ -122,12 +122,12 @@ export default function ProductDetailRight({
 							Reserve
 						</button>
 					</div>
-					<div className="text-black2 font-normal text-base justify-between flex w-full">
-						<span>
-							${product.PricePerHour} x {bookList.length} hours
-						</span>
-						<span>${total}</span>
-					</div>
+				<div className="text-black2 font-normal text-base justify-between flex w-full">
+					<span>
+						${product.pricePerHour} x {bookList.length} hours
+					</span>
+					<span>${total}</span>
+				</div>
 					<hr className="w-full" />
 					<div className="text-black2 font-bold text-base justify-between flex w-full">
 						<span>Total</span>

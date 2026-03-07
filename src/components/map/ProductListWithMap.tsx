@@ -2,7 +2,7 @@
 
 import { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
-import ProductMap from "@/components/map/ProductMap";
+import ProductsMap from "@/components/map/ProductsMap";
 import { useState } from "react";
 
 interface ProductListWithMapProps {
@@ -44,7 +44,7 @@ export default function ProductListWithMap({
 
             {/* Right side - Map (sticky) */}
             <div className="w-1/2 sticky top-0 h-full">
-                <ProductMap
+                <ProductsMap
                     products={products}
                     hoveredProductId={hoveredProductId}
                     onMarkerHover={setHoveredProductId}

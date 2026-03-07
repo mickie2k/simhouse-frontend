@@ -126,9 +126,8 @@ axiosJWTInstance.interceptors.response.use(
 
             try {
                 // Attempt to refresh the token
-                await axios.post(
-                    `${API_HOST}/auth/refresh`,
-                    {},
+                await axios.get(
+                    `${API_HOST}auth/customer/refresh`,
                     {
                         withCredentials: true,
                         timeout: 5000,

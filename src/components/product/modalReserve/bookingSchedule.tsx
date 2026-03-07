@@ -24,9 +24,9 @@ export default function BookingSchedule({
 				setLoading(true);
 				setError(null);
 				
-				const response = await axiosInstance.get<Schedule[]>(
-					`product/id/${id}/booking`
-				);
+			const response = await axiosInstance.get<Schedule[]>(
+				`simulator/${id}/schedule`
+			);
 				const data = response.data;
 
 				if (!data || data.length === 0) {
@@ -35,32 +35,32 @@ export default function BookingSchedule({
 					return;
 				}
 
-				const groupedData = data.reduce(
-					(
-						acc: { [date: string]: { Date: string; Data: Schedule[] } },
-						item: Schedule
-					) => {
-						const options = {
-							year: "numeric" as const,
-							month: "2-digit" as const,
-							day: "2-digit" as const,
-							timeZone: "Asia/Bangkok",
-						};
+			const groupedData = data.reduce(
+				(
+					acc: { [date: string]: { Date: string; Data: Schedule[] } },
+					item: Schedule
+				) => {
+					const options = {
+						year: "numeric" as const,
+						month: "2-digit" as const,
+						day: "2-digit" as const,
+						timeZone: "Asia/Bangkok",
+					};
 
-						item.Date = new Date(item.Date).toLocaleDateString(
-							"en-CA",
-							options
-						);
+					item.date = new Date(item.date).toLocaleDateString(
+						"en-CA",
+						options
+					);
 
-						const date = new Date(item.Date).toISOString().split("T")[0];
-						if (!acc[date]) {
-							acc[date] = { Date: date, Data: [] };
-						}
-						acc[date].Data.push(item);
-						return acc;
-					},
-					{} as { [key: string]: { Date: string; Data: Schedule[] } }
-				);
+					const date = new Date(item.date).toISOString().split("T")[0];
+					if (!acc[date]) {
+						acc[date] = { Date: date, Data: [] };
+					}
+					acc[date].Data.push(item);
+					return acc;
+				},
+				{} as { [key: string]: { Date: string; Data: Schedule[] } }
+			);
 
 				const resultArray = Object.values(groupedData) as {
 					Date: string;

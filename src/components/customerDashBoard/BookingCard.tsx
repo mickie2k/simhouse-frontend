@@ -1,15 +1,15 @@
-import { Booking } from "@/types";
+import { Booking, Product } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { MdPending, MdCancel } from "react-icons/md";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 
 export default async function BookingCard({ booking }: { booking: Booking }) {
-	let product = null;
+	let product: Product | null = null;
 
 	try {
 		const res = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}product/id/${booking.SimID}`,
+			`${process.env.NEXT_PUBLIC_API_URL}simulator/${booking.simId}`,
 			{
 				next: { revalidate: 600 }, // Cache for 10 minutes
 			}
@@ -29,9 +29,9 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 					<span className="text-gray-500">Image unavailable</span>
 				</div>
 				<div className="flex flex-col grow justify-between">
-					<h3 className="text-xl">Booking #{booking.BookingID}</h3>
+					<h3 className="text-xl">Booking #{booking.id}</h3>
 					<p className="text-sm text-gray-500">Product details unavailable</p>
-					<StatusBadge statusId={booking.StatusID} />
+					<StatusBadge statusId={booking.statusId} />
 				</div>
 			</div>
 		);
@@ -47,31 +47,31 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 	return (
 		<div>
 			<Link
-				href={`/dashboard/booking/${booking.BookingID}`}
+				href={`/dashboard/booking/${booking.id}`}
 				className="flex flex-row  gap-4 cursor-pointer border-borderColor1 border rounded-xl p-4 hover:bg-zinc-50"
 			>
 				<div className="h-48 w-48 bg-slate-600 rounded-lg overflow-hidden">
 					<Image
-						src={`${process.env.NEXT_PUBLIC_API_URL}image/${product.firstimage}`}
+						src={product.firstImage}
 						width={300}
 						height={300}
-						alt={product.SimID + "_image"}
+						alt={product.id + "_image"}
 						className="h-full w-full object-cover"
 					/>
 				</div>
 				<div className="flex flex-col grow justify-between ">
 					<div className="text-xl text-black2">
-						<h3 className="text-xl">{product.SimListName}</h3>
+						<h3 className="text-xl">{product.simListName}</h3>
 					</div>
 					<div>
 						<div className="flex w-full">
 							<span className="text-sm font-light">
-								<strong>Booking id</strong> : {booking.BookingID}
+								<strong>Booking id</strong> : {booking.id}
 							</span>
 						</div>
 						<div className="flex w-full">
 							<span className="text-sm font-light">
-								<strong>Price</strong> : ${product.PricePerHour}
+								<strong>Price</strong> : ${product.pricePerHour}
 							</span>
 							<h4 className="text-sm font-light text-black2">
 								<span className="font-light text-secondText text-sm">/hrs</span>
@@ -80,7 +80,7 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 						<div className="flex flex-wrap w-full">
 							<span className="text-sm font-light">
 								<strong>Date</strong> :{" "}
-								{new Date(booking.BookingDate).toLocaleDateString(
+								{new Date(booking.bookingDate).toLocaleDateString(
 									"en-US",
 									options
 								)}
@@ -94,10 +94,10 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 					<div>
 						<h1 className="text-lg font-medium">
 							<span className="text-base font-light">Totals</span> : $
-							{booking.TotalPrice}
+							{booking.totalPrice}
 						</h1>
 					</div>
-					<StatusBadge statusId={booking.StatusID} />
+					<StatusBadge statusId={booking.statusId} />
 				</div>
 			</Link>
 		</div>

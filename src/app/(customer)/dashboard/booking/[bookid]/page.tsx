@@ -1,7 +1,7 @@
 "use client";
 
 import BookingDetail from "@/components/customerDashBoard/bookingDetail/BookingDetail";
-import { BookingDetailSchedule } from "@/types";
+import { BookingDetail as BookingDetailType } from "@/types";
 import { axiosJWTInstance } from "@/lib/http";
 import { useParams, useSearchParams, notFound } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -13,16 +13,16 @@ export default function BookingPage() {
 	const bookid = params.bookid as string;
 	const justbook = searchParams.get("justbook") || "0";
 
-	const [bookingDetail, setBookingDetail] = useState<BookingDetailSchedule[] | null>(null);
+	const [bookingDetail, setBookingDetail] = useState<BookingDetailType[] | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [notFoundError, setNotFoundError] = useState(false);
 
 	useEffect(() => {
 		const fetchBookingDetail = async () => {
 			try {
-				const response = await axiosJWTInstance.get<BookingDetailSchedule[]>(
-					`user/booking/${bookid}/schedule`
-				);
+			const response = await axiosJWTInstance.get<BookingDetailType[]>(
+				`booking/${bookid}/schedule`
+			);
 				
 				if (!response.data || response.data.length === 0) {
 					setNotFoundError(true);

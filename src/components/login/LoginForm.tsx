@@ -18,7 +18,7 @@ export default function LoginhtmlForm() {
 		});
 
 		try {
-			await axiosInstance.post("user/login", formDataJson);
+			await axiosInstance.post("auth/customer/login", formDataJson);
 			cookies.set("isAuth", "true");
 			router.push("/");
 		} catch (error) {
@@ -38,20 +38,20 @@ export default function LoginhtmlForm() {
 						</h1>
 						<form className="space-y-4 md:space-y-6" onSubmit={onSubmit}>
 							<div>
-								<label
-									htmlFor="username"
-									className="block mb-2 text-sm font-medium text-gray-900 "
-								>
-									Your Username
-								</label>
-								<input
-									type="username"
-									name="username"
-									id="username"
-									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
-									placeholder="username"
-									required
-								/>
+						<label
+								htmlFor="email"
+								className="block mb-2 text-sm font-medium text-gray-900 "
+							>
+								Your Email
+							</label>
+							<input
+								type="email"
+								name="email"
+								id="email"
+								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
+								placeholder="name@example.com"
+								required
+							/>
 							</div>
 							<div>
 								<label

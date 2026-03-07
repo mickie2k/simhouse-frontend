@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	
 	try {
 		const res = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
+			`${process.env.NEXT_PUBLIC_API_URL}simulator/${id}`,
 			{ next: { revalidate: 600 } } // Revalidate every 10 minutes
 		);
 		if (res.ok) {
@@ -33,7 +33,7 @@ export default async function ProductPage({ params }: Props) {
 	const { id } = await params;
 	
 	const res = await fetch(
-		`${process.env.NEXT_PUBLIC_API_URL}product/id/${id}`,
+		`${process.env.NEXT_PUBLIC_API_URL}simulator/${id}`,
 		{
 			next: { revalidate: 600 }, // Revalidate every 10 minutes
 		}

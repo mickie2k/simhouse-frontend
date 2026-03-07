@@ -39,15 +39,15 @@ export default function BookingDate({
 				<h3 className="text-lg font-semibold leading-5">{day}</h3>
 			</div>
 			<div className="flex flex-row flex-wrap  gap-2 w-full">
-				{data.map((item: Schedule) => (
-					<BookingTime
-						key={item.ScheduleID}
-						id={item.ScheduleID}
-						addList={addList}
-						schedule={item}
-						bookList={bookList}
-					/>
-				))}
+			{data.map((item: Schedule) => (
+				<BookingTime
+					key={item.id}
+					id={item.id}
+					addList={addList}
+					schedule={item}
+					bookList={bookList}
+				/>
+			))}
 			</div>
 		</div>
 	);

@@ -15,9 +15,9 @@ export default function CancelBookingButton({
 		if (userConfirmed) {
 			setIsLoading(true);
 			try {
-				const response = await axiosJWTInstance.delete<{ status: boolean }>(
-					`user/booking/${bookingId}`
-				);
+			const response = await axiosJWTInstance.delete<{ status: boolean }>(
+				`booking/${bookingId}`
+			);
 				const data = response.data;
 				if (data.status) {
 					window.location.reload();

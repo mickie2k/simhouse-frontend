@@ -44,7 +44,7 @@ export default function Navbar() {
 	}
 	async function logout() {
 		try {
-			await axiosJWTInstance.post("user/logout");
+			await axiosJWTInstance.get("auth/customer/logout");
 			setIsLogin(false);
 			setUsername("");
 			cookies.remove("isAuth");

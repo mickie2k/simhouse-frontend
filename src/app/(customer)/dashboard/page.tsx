@@ -12,7 +12,7 @@ export default function DashBoard() {
 	useEffect(() => {
 		const fetchBookings = async () => {
 			try {
-				const response = await axiosJWTInstance.get("user/booking");
+				const response = await axiosJWTInstance.get("booking");
 				setData(response.data);
 			} catch (error) {
 				console.error("Failed to fetch bookings:", error);

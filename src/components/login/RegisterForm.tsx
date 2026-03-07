@@ -17,7 +17,7 @@ export default function RegisterForm() {
 		});
 
 		try {
-			await axiosInstance.post("user/register", formDataJson);
+			await axiosInstance.post("auth/customer/register", formDataJson);
 			alert("Register success");
 			router.push("/login");
 		} catch (error) {
@@ -40,38 +40,54 @@ export default function RegisterForm() {
 								>
 									Your Fullname
 								</label>
-								<input
-									type="text"
-									name="fname"
-									id="fname"
-									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-t-lg  block w-full p-2.5 "
-									placeholder="First name"
-									required
-								/>
-								<input
-									type="text"
-									name="lname"
-									id="lname"
-									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-b-lg  block w-full p-2.5 "
-									placeholder="Last name"
-									required
-								/>
+						<input
+								type="text"
+								name="firstName"
+								id="firstName"
+								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-t-lg  block w-full p-2.5 "
+								placeholder="First name"
+								required
+							/>
+							<input
+								type="text"
+								name="lastName"
+								id="lastName"
+								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-b-lg  block w-full p-2.5 "
+								placeholder="Last name"
+								required
+							/>
 							</div>
 							<div>
-								<label
-									htmlFor="username"
-									className="block mb-2 text-sm font-medium text-gray-900 "
-								>
-									Your Username
-								</label>
-								<input
-									type="username"
-									name="username"
-									id="username"
-									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
-									placeholder="username"
-									required
-								/>
+						<label
+								htmlFor="username"
+								className="block mb-2 text-sm font-medium text-gray-900 "
+							>
+								Your Username
+							</label>
+							<input
+								type="text"
+								name="username"
+								id="username"
+								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
+								placeholder="username"
+								required
+							/>
+						</div>
+						<div>
+							<label
+								htmlFor="email"
+								className="block mb-2 text-sm font-medium text-gray-900 "
+							>
+								Your Email
+							</label>
+							<input
+								type="email"
+								name="email"
+								id="email"
+								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
+								placeholder="name@example.com"
+								required
+							/>
 							</div>
 							<div>
 								<label

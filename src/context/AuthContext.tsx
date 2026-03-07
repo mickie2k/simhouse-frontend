@@ -12,9 +12,9 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType>({
 	username: "",
-	setUsername: () => {},
+	setUsername: () => { },
 	isLogin: false,
-	setIsLogin: () => {},
+	setIsLogin: () => { },
 });
 export default function Auth({
 	children,
@@ -25,14 +25,14 @@ export default function Auth({
 	useEffect(() => {
 		const fetchUsername = async () => {
 			try {
-				const response = await axiosJWTInstance.get<{ Username: string }>(
-					"user/username",
-					{ skipAuthRedirect: true }
-				);
-				const data = response.data;
+			const response = await axiosJWTInstance.get<{ username: string }>(
+				"user/username",
+				{ skipAuthRedirect: true }
+			);
+			const data = response.data;
 
-				if (data) {
-					setUsername(data.Username);
+			if (data) {
+				setUsername(data.username);
 					setIsLogin(true);
 					cookies.set("isAuth", "true");
 				} else {

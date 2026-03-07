@@ -4,17 +4,17 @@ import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps
 import { Product } from "@/types";
 import { useState } from "react";
 
-interface ProductMapProps {
+interface ProductsMapProps {
     products: Product[];
     hoveredProductId: number | null;
     onMarkerHover: (productId: number | null) => void;
 }
 
-export default function ProductMap({
+export default function ProductsMap({
     products,
     hoveredProductId,
     onMarkerHover
-}: ProductMapProps) {
+}: ProductsMapProps) {
     const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
     // Calculate center point from all products
@@ -65,8 +65,8 @@ export default function ProductMap({
                                 {/* Price badge */}
                                 <div
                                     className={`absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${isHovered || isSelected
-                                            ? 'bg-black text-white scale-110'
-                                            : 'bg-white text-gray-800 shadow-md'
+                                        ? 'bg-black text-white scale-110'
+                                        : 'bg-white text-gray-800 shadow-md'
                                         }`}
                                 >
                                     ฿{product.PricePerHour}/hr
