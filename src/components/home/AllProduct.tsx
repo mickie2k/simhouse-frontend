@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ProductCard from "../product/ProductCard";
-import { Product } from "@/types";
+import { PaginatedResponse, Product } from "@/types";
+import { normalizePaginatedProducts } from "@/lib/products";
 
 function AllProductFallback() {
 	return (
@@ -22,7 +23,7 @@ function AllProductFallback() {
 
 export default async function AllProduct() {
 	try {
-		const requestUrl = `${process.env.NEXT_PUBLIC_API_URL}product/all?limit=15`;
+		const requestUrl = `${process.env.NEXT_PUBLIC_API_URL}simulator?limit=15`;
 		const res = await fetch(requestUrl, {
 			next: { revalidate: 300 },
 		});
@@ -38,14 +39,15 @@ export default async function AllProduct() {
 			return <AllProductFallback />;
 		}
 
-		const products: Product[] = await res.json();
+		const payload: PaginatedResponse<Product> = await res.json();
+		const products = normalizePaginatedProducts(payload).data;
 
 		return (
 			<section>
 				<h2 className="text-3xl font-bold mb-6">All</h2>
 				<div className="grid sm:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5  gap-x-6 gap-y-10">
 					{products.map((product) => (
-						<ProductCard key={product.SimID} product={product} />
+						<ProductCard key={product.id} product={product} />
 					))}
 				</div>
 				<div className="w-full flex flex-col items-center justify-center mt-12 gap-4">

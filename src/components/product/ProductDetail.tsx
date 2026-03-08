@@ -14,7 +14,7 @@ export interface DateContextType {
 
 export const DateContext = createContext<DateContextType>({
 	date: "",
-	setDate: () => {},
+	setDate: () => { },
 });
 export default function ProductDetail({ product }: { product: Product }) {
 	const [modal, setModal] = useState(false);
@@ -23,7 +23,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
 	const customStyles = {
 		overlay: {
-			backgroundColor: "rgba(0, 0, 0, 0.7)",
+			backgroundColor: "rgba(0, 0, 0, 0.65)",
 			zIndex: 1000,
 		},
 		content: {
@@ -33,14 +33,18 @@ export default function ProductDetail({ product }: { product: Product }) {
 			bottom: "auto",
 			marginRight: "-50%",
 			transform: "translate(-50%, -50%)",
-			padding: "24px",
-			width: "75%",
+			padding: "28px",
+			width: "min(860px, 90vw)",
+			height: "min(600px, 90vh)",
 			border: "none",
-			OverflowY: "scroll",
-			height: "90%",
+			borderRadius: "16px",
+			boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+			overflow: "hidden",
+			display: "flex",
+			flexDirection: "column" as const,
 		},
 	};
-	Modal.setAppElement("#_next");
+	Modal.setAppElement("body");
 
 	function afterOpenModal() {
 		// references are now sync'd and can be accessed.
@@ -70,25 +74,25 @@ export default function ProductDetail({ product }: { product: Product }) {
 						product={product}
 					/>
 				</Modal>
-			<div>
-				<div className="flex flex-row flex-wrap justify-between items-center    ">
-					<h1 className="text-[1.625rem] font-semibold ">
-						{product.simListName}
-					</h1>
+				<div>
+					<div className="flex flex-row flex-wrap justify-between items-center    ">
+						<h1 className="text-[1.625rem] font-semibold ">
+							{product.simListName}
+						</h1>
 
-					<SaveProduct productID={product.id} />
+						<SaveProduct productID={product.id} />
+					</div>
+					<a
+						href={`https://www.google.com/maps/search/?api=1&query=${product.latitude}%2C${product.longitude}`}
+						target="_blank"
+						className="text-secondText text-sm underline"
+					>
+						{product.addressDetail}
+					</a>
 				</div>
-				<a
-					href={`https://www.google.com/maps/search/?api=1&query=${product.latitude}%2C${product.longitude}`}
-					target="_blank"
-					className="text-secondText text-sm underline"
-				>
-					{product.addressDetail}
-				</a>
-			</div>
 
-			<div
-				className="
+				<div
+					className="
                 mt-6
                 grid
                 grid-cols-3
@@ -100,28 +104,28 @@ export default function ProductDetail({ product }: { product: Product }) {
 			relative
 			gap-2
 			"
-			>
-				<Image
-					src={product.firstImage}
-					width={400}
-					height={400}
-					alt={product.id + "_image"}
-					className="h-full w-full object-cover col-span-2 row-span-2"
-				/>
-				<Image
-					src={product.secondImage}
-					width={400}
-					height={400}
-					alt={product.id + "_image"}
-					className="h-full w-full object-cover col-span-1 row-span-1"
-				/>
-				<Image
-					src={product.thirdImage}
-					width={400}
-					height={400}
-					alt={product.id + "_image"}
-					className="h-full w-full object-cover col-span-1 row-span-1"
-				/>
+				>
+					<Image
+						src={product.firstImage}
+						width={400}
+						height={400}
+						alt={product.id + "_image"}
+						className="h-full w-full object-cover col-span-2 row-span-2"
+					/>
+					<Image
+						src={product.secondImage}
+						width={400}
+						height={400}
+						alt={product.id + "_image"}
+						className="h-full w-full object-cover col-span-1 row-span-1"
+					/>
+					<Image
+						src={product.thirdImage}
+						width={400}
+						height={400}
+						alt={product.id + "_image"}
+						className="h-full w-full object-cover col-span-1 row-span-1"
+					/>
 				</div>
 				<div className="py-8 flex justify-between h-full relative">
 					<ProductDetailLeft product={product} />

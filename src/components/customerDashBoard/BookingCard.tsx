@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MdPending, MdCancel } from "react-icons/md";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import { normalizeProduct } from "@/lib/products";
 
 export default async function BookingCard({ booking }: { booking: Booking }) {
 	let product: Product | null = null;
@@ -15,7 +16,7 @@ export default async function BookingCard({ booking }: { booking: Booking }) {
 			}
 		);
 		if (res.ok) {
-			product = await res.json();
+			product = normalizeProduct(await res.json());
 		}
 	} catch (error) {
 		console.error("Failed to fetch product:", error);

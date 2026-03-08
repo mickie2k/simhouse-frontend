@@ -17,10 +17,10 @@ export default function ProductListWithMap({
     const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
 
     return (
-        <div className="flex h-[calc(100vh-64px)] w-full">
+        <div className="flex h-[calc(100vh-80px)] w-full">
             {/* Left side - Product list */}
-            <div className="w-1/2 overflow-y-auto px-8 py-6">
-                <h2 className="text-3xl font-bold mb-6 sticky top-0 bg-white z-10 py-2">
+            <div className="w-1/2 px-12 py-6 overflow-y-auto no-scrollbar">
+                <h2 className="text-3xl font-bold mb-6 relative top-0 bg-white z-10 py-2">
                     {title}
                 </h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
@@ -29,7 +29,7 @@ export default function ProductListWithMap({
                             key={product.SimID}
                             onMouseEnter={() => setHoveredProductId(product.SimID)}
                             onMouseLeave={() => setHoveredProductId(null)}
-                            className="transition-transform hover:scale-105"
+                            className="transition-transform hover:scale-[1.02]"
                         >
                             <ProductCard product={product} />
                         </div>
@@ -43,12 +43,14 @@ export default function ProductListWithMap({
             </div>
 
             {/* Right side - Map (sticky) */}
-            <div className="w-1/2 sticky top-0 h-full">
-                <ProductsMap
-                    products={products}
-                    hoveredProductId={hoveredProductId}
-                    onMarkerHover={setHoveredProductId}
-                />
+            <div className="w-1/2 sticky top-0 h-full overflow-hidden pr-12 py-6">
+                <div className="rounded-xl overflow-hidden h-full w-full">
+                    <ProductsMap
+                        products={products}
+                        hoveredProductId={hoveredProductId}
+                        onMarkerHover={setHoveredProductId}
+                    />
+                </div>
             </div>
         </div>
     );

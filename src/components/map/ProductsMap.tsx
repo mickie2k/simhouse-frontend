@@ -3,6 +3,7 @@
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { Product } from "@/types";
 import { useState } from "react";
+import { mapStyle } from "@/lib/simhouse-map-style";
 
 interface ProductsMapProps {
     products: Product[];
@@ -36,31 +37,32 @@ export default function ProductsMap({
     return (
         <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
             <Map
-                mapId="simhouse-map"
+                mapId='5a706ca271cb9131ddb9311c'
                 defaultCenter={center}
-                defaultZoom={12}
-                gestureHandling="greedy"
-                disableDefaultUI={false}
-                className="h-full w-full"
+                defaultZoom={11}
+                gestureHandling={'greedy'}
+                disableDefaultUI={true}
+                className="h-full w-full border-0"
             >
                 {products.map((product) => {
                     const isHovered = hoveredProductId === product.SimID;
                     const isSelected = selectedProduct === product.SimID;
-
+                    const lat = product.Lat
+                    const lng = product.Long
                     return (
                         <AdvancedMarker
                             key={product.SimID}
-                            position={{ lat: product.Lat, lng: product.Long }}
+                            position={{ lat, lng } as google.maps.LatLngLiteral}
                             onClick={() => setSelectedProduct(product.SimID)}
                             onMouseEnter={() => onMarkerHover(product.SimID)}
                             onMouseLeave={() => onMarkerHover(null)}
                         >
                             <div className="relative">
                                 <Pin
-                                    background={isHovered || isSelected ? "#000000" : "#6366f1"}
-                                    borderColor={isHovered || isSelected ? "#000000" : "#4f46e5"}
+                                    background={isHovered || isSelected ? "#000000" : "#FC6200"}
+                                    borderColor={isHovered || isSelected ? "#000000" : "#FC6200"}
                                     glyphColor="#ffffff"
-                                    scale={isHovered || isSelected ? 1.4 : 1.2}
+                                    scale={isHovered || isSelected ? 1.2 : 1.1}
                                 />
                                 {/* Price badge */}
                                 <div

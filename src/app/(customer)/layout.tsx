@@ -1,4 +1,4 @@
-import Header from "@/components/navbar/Navbar";
+import Navbar from "@/components/navbar/navbar";
 import Auth from "@/context/AuthContext";
 
 export default function CustomerLayout({
@@ -10,7 +10,7 @@ export default function CustomerLayout({
 		<>
 			<div id="_next">
 				<Auth>
-					<Header />
+					<Navbar />
 				</Auth>
 				{children}
 			</div>

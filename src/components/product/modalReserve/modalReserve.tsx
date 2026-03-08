@@ -1,3 +1,4 @@
+"use client";
 import { Product } from "@/types";
 import BookingSchedule from "./bookingSchedule";
 import { useEffect, useState } from "react";
@@ -31,66 +32,80 @@ export default function ModalReserve({
 	}
 
 	return (
-		<>
-			<div className="flex flex-col w-full  overflow-hidden  gap-4">
-				<div className="flex w-full justify-between h-1/5">
-					<h1 className="text-xl font-medium">
-						$100{" "}
-						<span className="text-base font-normal text-secondText">/ hrs</span>
-						<span className="text-base font-normal">
-							<span aria-hidden="true">&nbsp;· &nbsp;</span> Moza R9 lnw
-						</span>
-					</h1>
-					<div>
-						<button
-							type="button"
-							className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-							data-modal-hide="default-modal"
-							onClick={onClose}
-						>
-							<svg
-								className="w-3 h-3"
-								aria-hidden="true"
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 14 14"
-							>
-								<path
-									stroke="currentColor"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-								/>
-							</svg>
-							<span className="sr-only">Close modal</span>
-						</button>
-					</div>
-				</div>
-				{/* <h1 className="text-xl font-medium">Pick Date/Time</h1> */}
-			<BookingSchedule
-				addList={addList}
-				bookList={bookList}
-				id={product.id}
-			/>
-				<div className="flex justify-between h-1/5">
-					<h6 className="text-base font-medium">
-						Total
-						<span className="ml-1 text-sm font-normal text-secondText">
-							100 hrs x 3
-						</span>
-					</h6>
-
-					<h6 className=" font-medium">฿{total}</h6>
+		<div className="flex flex-col h-full">
+			{/* Header */}
+			<div className="flex items-center justify-between pb-4 border-b border-gray-200">
+				<div>
+					<h2 className="text-xl font-semibold text-black2">
+						{product.simListName}
+					</h2>
+					<p className="text-sm text-secondText mt-0.5">
+						<span className="font-medium text-black2">
+							${product.pricePerHour}
+						</span>{" "}
+						/ hr
+					</p>
 				</div>
 				<button
-					type="submit"
-					className="h-1/5 w-full text-white bg-primary1 hover:bg-primary1_hover  font-medium rounded-lg text-base px-5 py-3.5 text-center "
+					type="button"
 					onClick={onClose}
+					className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-900"
+					aria-label="Close"
 				>
-					Confirm
+					<svg
+						className="w-4 h-4"
+						aria-hidden="true"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 14 14"
+					>
+						<path
+							stroke="currentColor"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth="2"
+							d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+						/>
+					</svg>
 				</button>
 			</div>
-		</>
+
+			{/* Schedule picker */}
+			<div className="flex-1 overflow-hidden mt-4">
+				<BookingSchedule
+					addList={addList}
+					bookList={bookList}
+					id={product.id}
+				/>
+			</div>
+
+			{/* Footer */}
+			<div className="border-t border-gray-200 pt-4 mt-4 flex items-center justify-between gap-4">
+				<div className="text-sm text-black2">
+					{bookList.length > 0 ? (
+						<>
+							<span className="font-medium">
+								${product.pricePerHour} × {bookList.length}{" "}
+								{bookList.length === 1 ? "hr" : "hrs"}
+							</span>
+							<span className="ml-3 text-secondText">
+								Total:{" "}
+								<span className="font-semibold text-black2">${total}</span>
+							</span>
+						</>
+					) : (
+						<span className="text-secondText">Select time slots to continue</span>
+					)}
+				</div>
+				<button
+					type="button"
+					disabled={bookList.length === 0}
+					onClick={onClose}
+					className="px-6 py-2.5 bg-primary1 hover:bg-primary1_hover disabled:opacity-40 disabled:hover:bg-primary1 text-white font-medium rounded-lg text-sm transition-colors whitespace-nowrap"
+				>
+					Confirm{bookList.length > 0 ? ` (${bookList.length} hr${bookList.length > 1 ? "s" : ""})` : ""}
+				</button>
+			</div>
+		</div>
 	);
 }

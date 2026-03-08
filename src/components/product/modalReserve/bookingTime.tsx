@@ -1,6 +1,17 @@
+"use client";
 import { useEffect, useState, useContext } from "react";
 import { Schedule } from "@/types";
 import { DateContext } from "../ProductDetail";
+
+// Format "HH:MM:SS" → "H:MM AM/PM"
+function formatTime(timeStr: string): string {
+	const [hourStr, minStr] = timeStr.split(":");
+	let hour = parseInt(hourStr, 10);
+	const min = minStr ?? "00";
+	const period = hour >= 12 ? "PM" : "AM";
+	hour = hour % 12 || 12;
+	return `${hour}:${min} ${period}`;
+}
 
 const BookingTime = ({
 	addList,
@@ -13,53 +24,47 @@ const BookingTime = ({
 	bookList: number[];
 	schedule: Schedule;
 }) => {
-	const [startTimeHour, startTimeMinute] = schedule.startTime.split(":");
 	const { date, setDate } = useContext(DateContext);
+	const [isSelected, setIsSelected] = useState(false);
 
-	const [isClicked, setIsClicked] = useState<boolean>(false);
 	useEffect(() => {
-		if (bookList.find((item) => item === id)) {
-			setIsClicked(true);
-		} else {
-			setIsClicked(false);
-		}
+		setIsSelected(bookList.includes(id));
 	}, [bookList, id]);
 
 	function handleClick() {
-		if (date === "") {
+		// If selecting a slot on a different date while others are already booked
+		if (date !== "" && date !== schedule.date && bookList.length > 0) {
+			alert("You can only book slots on the same date.");
+			return;
+		}
+		if (date === "" || (date !== schedule.date && bookList.length === 0)) {
 			setDate(schedule.date);
 		}
-		if (date === schedule.date) {
-			setIsClicked((prevIsClicked: boolean) => !prevIsClicked);
-			addList(id);
-		} else {
-			if (bookList.length === 0) {
-				setDate(schedule.date);
-				setIsClicked((prevIsClicked: boolean) => !prevIsClicked);
-				addList(id);
-			} else {
-				alert("You can only book in the same date");
-			}
-		}
+		addList(id);
 	}
+
+	const start = formatTime(schedule.startTime);
+	const end = formatTime(schedule.endTime);
+
 	return (
 		<button
+			type="button"
 			onClick={handleClick}
-			className={`flex flex-col w-[74px] bg-transparent border-borderColor2 border text-black rounded-lg justify-center items-center py-3 cursor-pointer ${
-				isClicked ? "border-primary1 text-primary1" : ""
-			}`}
+			className={[
+				"flex items-center justify-between w-full px-4 py-3 rounded-xl border text-sm font-medium transition-all",
+				isSelected
+					? "border-primary1 bg-orange-50 text-primary1"
+					: "border-gray-200 bg-white text-black2 hover:border-gray-400",
+			].join(" ")}
 		>
-			<h6 className="text-lg leading-5">
-				{startTimeHour.startsWith("0") ? startTimeHour.slice(1) : startTimeHour}
-				<span className="text-lg font-normal">:{startTimeMinute}</span>
-			</h6>
-			<h3
-				className={`text-xs font-extralight  ${
-					isClicked ? "text-primary1" : "text-neutral-500"
-				}`}
-			>
-				Available
-			</h3>
+			<span className="font-semibold">{start}</span>
+			<span className="text-xs text-secondText mx-1">→</span>
+			<span className="font-semibold">{end}</span>
+			{isSelected && (
+				<span className="ml-2 w-4 h-4 flex items-center justify-center rounded-full bg-primary1 text-white text-[10px] shrink-0">
+					✓
+				</span>
+			)}
 		</button>
 	);
 };

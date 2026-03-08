@@ -1,6 +1,7 @@
-import { Product } from "@/types";
+import { PaginatedResponse, Product } from "@/types";
 import ProductListWithMap from "@/components/map/ProductListWithMap";
 import type { Metadata } from "next";
+import { normalizePaginatedProducts } from "@/lib/products";
 
 type Props = { params: Promise<{ page: number; type: string }> };
 
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TypePage({ params }: Props) {
 	const { page, type } = await params;
-	
+
 	let typeID = 0;
 	if (type === "formula") {
 		typeID = 1;
@@ -25,7 +26,7 @@ export default async function TypePage({ params }: Props) {
 
 	const res = await fetch(
 		process.env.NEXT_PUBLIC_API_URL +
-			`product/all?limit=30&page=${page}&type=${typeID}`,
+		`product/all?limit=30&page=${page}&type=${typeID}`,
 		{
 			next: { revalidate: 300 }, // Revalidate every 5 minutes
 		}
@@ -33,7 +34,8 @@ export default async function TypePage({ params }: Props) {
 	if (!res.ok) {
 		throw new Error("Failed to fetch products");
 	}
-	const products: Product[] = await res.json();
+	const payload: PaginatedResponse<Product> = await res.json();
+	const products: Product[] = normalizePaginatedProducts(payload).data;
 
 	const title = typeID === 1 ? "Formula Simulators" : "GT Racing Simulators";
 

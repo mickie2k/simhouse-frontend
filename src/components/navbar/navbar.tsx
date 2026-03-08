@@ -68,9 +68,8 @@ export default function Navbar() {
 
 				<div
 					id="dropdown"
-					className={`z-10 absolute  bg-white divide-y divide-gray-100 rounded-lg shadow-[0px_6px_16px_rgba(0,0,0,0.1)] w-48 right-0 ${
-						!isMenu && "hidden"
-					}`}
+					className={`z-10 absolute  bg-white divide-y divide-gray-100 rounded-lg shadow-[0px_6px_16px_rgba(0,0,0,0.1)] w-48 right-0 ${!isMenu && "hidden"
+						}`}
 				>
 					<ul
 						className="py-2 text-sm text-gray-700 flex flex-col gap-2 "

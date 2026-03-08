@@ -2,6 +2,7 @@ import { Product, PaginatedResponse } from "@/types";
 import type { Metadata } from "next";
 import ProductCard from "@/components/product/ProductCard";
 import PaginationSection from "@/components/pagination/PaginationSection";
+import { normalizePaginatedProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
 	title: "Browse Simulators",
@@ -20,8 +21,8 @@ export default async function Page({ params }: { params: Promise<{ page: number 
 	if (!res.ok) {
 		throw new Error("Failed to fetch products");
 	}
-	const paginatedProducts: PaginatedResponse<Product> = await res.json();
-	const products: Product[] = paginatedProducts.data;
+	const payload: PaginatedResponse<Product> = await res.json();
+	const products: Product[] = normalizePaginatedProducts(payload).data;
 
 	return (
 		<main className="min-h-full w-full relative ">
@@ -30,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ page: number 
 					<h2 className="text-3xl font-bold mb-6">All</h2>
 					<div className=" grid sm:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5  gap-x-6 gap-y-10">
 						{products.map((product: Product) => (
-							<ProductCard key={product.SimID} product={product} />
+							<ProductCard key={product.id} product={product} />
 						))}
 					</div>
 					<PaginationSection currentPage={page} totalPages={15} basePath="/page" />

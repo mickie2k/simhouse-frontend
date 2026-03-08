@@ -1,4 +1,4 @@
-import Header from "@/components/navbar/Navbar";
+import Header from "@/components/navbar/navbar";
 import Auth from "@/context/AuthContext";
 
 export default function HostLayout({
