@@ -1,6 +1,6 @@
 "use client";
 
-import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { Product } from "@/types";
 import { useState } from "react";
 import { mapStyle } from "@/lib/simhouse-map-style";
@@ -21,8 +21,8 @@ export default function ProductsMap({
     // Calculate center point from all products
     const center = products.length > 0
         ? {
-            lat: products.reduce((sum, p) => sum + p.Lat, 0) / products.length,
-            lng: products.reduce((sum, p) => sum + p.Long, 0) / products.length,
+            lat: products.reduce((sum, p) => sum + p.latitude, 0) / products.length,
+            lng: products.reduce((sum, p) => sum + p.longitude, 0) / products.length,
         }
         : { lat: 13.7563, lng: 100.5018 }; // Default to Bangkok
 
@@ -45,34 +45,26 @@ export default function ProductsMap({
                 className="h-full w-full border-0"
             >
                 {products.map((product) => {
-                    const isHovered = hoveredProductId === product.SimID;
-                    const isSelected = selectedProduct === product.SimID;
-                    const lat = product.Lat
-                    const lng = product.Long
+                    const isHovered = hoveredProductId === product.id;
+                    const isSelected = selectedProduct === product.id;
+                    const lat = product.latitude;
+                    const lng = product.longitude;
                     return (
                         <AdvancedMarker
-                            key={product.SimID}
+                            key={product.id}
                             position={{ lat, lng } as google.maps.LatLngLiteral}
-                            onClick={() => setSelectedProduct(product.SimID)}
-                            onMouseEnter={() => onMarkerHover(product.SimID)}
+                            onClick={() => setSelectedProduct(product.id)}
+                            onMouseEnter={() => onMarkerHover(product.id)}
                             onMouseLeave={() => onMarkerHover(null)}
+                            zIndex={isHovered || isSelected ? 1000 : 1}
                         >
-                            <div className="relative">
-                                <Pin
-                                    background={isHovered || isSelected ? "#000000" : "#FC6200"}
-                                    borderColor={isHovered || isSelected ? "#000000" : "#FC6200"}
-                                    glyphColor="#ffffff"
-                                    scale={isHovered || isSelected ? 1.2 : 1.1}
-                                />
-                                {/* Price badge */}
-                                <div
-                                    className={`absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${isHovered || isSelected
-                                        ? 'bg-black text-white scale-110'
-                                        : 'bg-white text-gray-800 shadow-md'
-                                        }`}
-                                >
-                                    ฿{product.PricePerHour}/hr
-                                </div>
+                            <div
+                                className={`px-2.5 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all cursor-pointer border 
+                                focus:text-white hover:shadow-lg hover:scale-110 
+                                bg-white text-gray-900 shadow-md border-gray-200'
+                                ${isSelected ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+                            >
+                                ${product.pricePerHour.toLocaleString()}
                             </div>
                         </AdvancedMarker>
                     );

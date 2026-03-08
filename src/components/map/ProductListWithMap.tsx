@@ -4,15 +4,20 @@ import { Product } from "@/types";
 import ProductCard from "@/components/product/ProductCard";
 import ProductsMap from "@/components/map/ProductsMap";
 import { useState } from "react";
+import PaginationSection from "../pagination/PaginationSection";
 
 interface ProductListWithMapProps {
     products: Product[];
     title?: string;
+    page?: number;
+    totalPages?: number;
 }
 
 export default function ProductListWithMap({
     products,
-    title = "All Simulators"
+    title = "All Simulators",
+    page,
+    totalPages
 }: ProductListWithMapProps) {
     const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
 
@@ -26,8 +31,8 @@ export default function ProductListWithMap({
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
                     {products.map((product) => (
                         <div
-                            key={product.SimID}
-                            onMouseEnter={() => setHoveredProductId(product.SimID)}
+                            key={product.id}
+                            onMouseEnter={() => setHoveredProductId(product.id)}
                             onMouseLeave={() => setHoveredProductId(null)}
                             className="transition-transform hover:scale-[1.02]"
                         >
@@ -39,6 +44,9 @@ export default function ProductListWithMap({
                     <div className="text-center text-gray-500 py-12">
                         <p>No simulators found</p>
                     </div>
+                )}
+                {page && totalPages && (
+                    <PaginationSection currentPage={page} totalPages={totalPages} basePath="/page" />
                 )}
             </div>
 

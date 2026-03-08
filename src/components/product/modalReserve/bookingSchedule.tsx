@@ -152,7 +152,7 @@ export default function BookingSchedule({
 	const availableDates = new Set(Object.keys(scheduleMap));
 
 	return (
-		<div className="flex gap-6 h-full">
+		<div className="flex flex-col sm:flex-row gap-6 h-full">
 			{/* ── Left: Calendar ─────────────────────────────────────────────── */}
 			<div className="flex flex-col w-72 shrink-0">
 				{/* Month navigation */}
@@ -219,17 +219,13 @@ export default function BookingSchedule({
 								>
 									{day}
 								</button>
-								{/* Availability dot */}
-								{hasSlots && !isPast && (
-									<div className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? "bg-white" : "bg-primary1"}`} />
-								)}
 							</div>
 						);
 					})}
 				</div>
 
 				{/* Legend */}
-				<div className="mt-4 flex items-center gap-3 text-xs text-secondText">
+				{/* <div className="mt-4 flex items-center gap-3 text-xs text-secondText">
 					<span className="flex items-center gap-1">
 						<span className="w-2 h-2 rounded-full bg-primary1 inline-block" />
 						Available
@@ -238,7 +234,7 @@ export default function BookingSchedule({
 						<span className="w-2 h-2 rounded-full bg-gray-200 inline-block" />
 						Unavailable
 					</span>
-				</div>
+				</div> */}
 			</div>
 
 			{/* Divider */}
@@ -274,7 +270,7 @@ export default function BookingSchedule({
 							{selectedSlots.length === 0 ? (
 								<p className="text-sm text-secondText">No slots available for this date.</p>
 							) : (
-								<div className="grid grid-cols-2 gap-2">
+								<div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
 									{selectedSlots.map((slot) => (
 										<BookingTime
 											key={slot.id}

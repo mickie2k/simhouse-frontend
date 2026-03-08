@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ProductCard from "../product/ProductCard";
 import { PaginatedResponse, Product } from "@/types";
-import { normalizePaginatedProducts } from "@/lib/products";
+import { formatImageUrl, normalizePaginatedProducts } from "@/lib/products";
 
 function AllProductFallback() {
 	return (
@@ -23,7 +23,7 @@ function AllProductFallback() {
 
 export default async function AllProduct() {
 	try {
-		const requestUrl = `${process.env.NEXT_PUBLIC_API_URL}simulator?limit=15`;
+		const requestUrl = `${process.env.NEXT_PUBLIC_API_URL}simulator`;
 		const res = await fetch(requestUrl, {
 			next: { revalidate: 300 },
 		});
@@ -39,8 +39,13 @@ export default async function AllProduct() {
 			return <AllProductFallback />;
 		}
 
-		const payload: PaginatedResponse<Product> = await res.json();
-		const products = normalizePaginatedProducts(payload).data;
+		const products: Product[] = await res.json();
+		products.forEach((product) => {
+			product.firstImage = formatImageUrl(product.firstImage);
+			product.secondImage = formatImageUrl(product.secondImage);
+			product.thirdImage = formatImageUrl(product.thirdImage);
+		});
+
 
 		return (
 			<section>

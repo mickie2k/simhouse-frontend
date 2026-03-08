@@ -29,24 +29,9 @@ export function normalizeProduct(product: ProductApiResponse): Product {
     const latitude = toNumber(product.latitude);
     const longitude = toNumber(product.longitude);
 
-    if (
-        !product.firstImage.startsWith("http") &&
-        !product.firstImage.startsWith("/")
-    ) {
-        product.firstImage = `/${product.firstImage}`;
-    }
-    if (
-        !product.secondImage.startsWith("http") &&
-        !product.secondImage.startsWith("/")
-    ) {
-        product.secondImage = `/${product.secondImage}`;
-    }
-    if (
-        !product.thirdImage.startsWith("http") &&
-        !product.thirdImage.startsWith("/")
-    ) {
-        product.thirdImage = `/${product.thirdImage}`;
-    }
+    product.firstImage = formatImageUrl(product.firstImage);
+    product.secondImage = formatImageUrl(product.secondImage);
+    product.thirdImage = formatImageUrl(product.thirdImage);
 
     return {
         ...product,
@@ -68,4 +53,11 @@ export function normalizePaginatedProducts(
         ...payload,
         data: payload.data.map(normalizeProduct),
     };
+}
+
+export function formatImageUrl(imagePath: string): string {
+    if (!imagePath.startsWith("http") && !imagePath.startsWith("/")) {
+        imagePath = `/${imagePath}`;
+    }
+    return imagePath;
 }

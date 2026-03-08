@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState, useContext } from "react";
 import { Schedule } from "@/types";
+import { HiArrowLongRight } from "react-icons/hi2";
+
 import { DateContext } from "../ProductDetail";
 
 // Format "HH:MM:SS" → "H:MM AM/PM"
@@ -57,14 +59,9 @@ const BookingTime = ({
 					: "border-gray-200 bg-white text-black2 hover:border-gray-400",
 			].join(" ")}
 		>
-			<span className="font-semibold">{start}</span>
-			<span className="text-xs text-secondText mx-1">→</span>
-			<span className="font-semibold">{end}</span>
-			{isSelected && (
-				<span className="ml-2 w-4 h-4 flex items-center justify-center rounded-full bg-primary1 text-white text-[10px] shrink-0">
-					✓
-				</span>
-			)}
+			<span className="font-semibold text-sm ">{start}</span>
+			<span className="text-base"><HiArrowLongRight /></span>
+			<span className="font-semibold text-sm">{end}</span>
 		</button>
 	);
 };

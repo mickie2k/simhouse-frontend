@@ -34,7 +34,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 			marginRight: "-50%",
 			transform: "translate(-50%, -50%)",
 			padding: "28px",
-			width: "min(860px, 90vw)",
+			width: "min(72rem, 90vw)",
 			height: "min(600px, 90vh)",
 			border: "none",
 			borderRadius: "16px",
