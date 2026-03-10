@@ -1,5 +1,5 @@
 "use client";
-import { Marker, APIProvider, Map } from "@vis.gl/react-google-maps";
+import { Marker, APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 export default function ProductMap({
 	lat,
 	lng,
@@ -14,15 +14,16 @@ export default function ProductMap({
 	return (
 		<APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}>
 			<Map
-				mapId={hostid.toString()}
-				style={{ width: "100%", height: "50vh" }}
+				mapId='5a706ca271cb9131ddb9311c'
+				gestureHandling={'greedy'}
+				className="h-[50vh] w-full border-0"
 				defaultZoom={13}
 				defaultCenter={{ lat: latitude, lng: longitude }}
 			>
-				<Marker
+				<AdvancedMarker
 					clickable={true}
 					position={{ lat: latitude, lng: longitude }}
-				></Marker>
+				></AdvancedMarker>
 			</Map>
 		</APIProvider>
 	);

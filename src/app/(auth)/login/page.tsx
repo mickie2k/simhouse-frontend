@@ -1,4 +1,5 @@
 import LoginForm from "@/components/login/LoginForm";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,8 +9,10 @@ export const metadata: Metadata = {
 
 export default function Login() {
 	return (
-		<main className="min-h-full w-full relative">
-			<LoginForm />
-		</main>
+		<CustomerAuthProvider>
+			<main className="min-h-full w-full relative">
+				<LoginForm />
+			</main>
+		</CustomerAuthProvider>
 	);
 }

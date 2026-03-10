@@ -10,11 +10,36 @@ export const metadata: Metadata = {
 	description: "Explore our collection of racing simulators",
 };
 
-export default async function Page({ params }: { params: Promise<{ page: number }> }) {
+type PageProps = {
+	params: Promise<{ page: number }>;
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function Page({ params, searchParams }: PageProps) {
 	const { page } = await params;
+	const search = await searchParams;
+
+	// Build query parameters
+	const queryParams = new URLSearchParams();
+	queryParams.set("limit", search.limit?.toString() || "30");
+	queryParams.set("page", page.toString());
+
+	// Add search filters if present
+	if (search.cityId) {
+		queryParams.set("cityId", search.cityId.toString());
+	}
+	if (search.simTypeIds) {
+		queryParams.set("simTypeIds", search.simTypeIds.toString());
+	}
+	if (search.startDate) {
+		queryParams.set("startDate", search.startDate.toString());
+	}
+	if (search.search) {
+		queryParams.set("search", search.search.toString());
+	}
 
 	const res = await fetch(
-		process.env.NEXT_PUBLIC_API_URL + "simulator/search?limit=30&page=" + page,
+		`${process.env.NEXT_PUBLIC_API_URL}simulator/search?${queryParams.toString()}`,
 		{
 			next: { revalidate: 300 }, // Revalidate every 5 minutes
 		}
@@ -25,23 +50,17 @@ export default async function Page({ params }: { params: Promise<{ page: number 
 	const payload: PaginatedResponse<Product> = await res.json();
 	const { data, meta }: PaginatedResponse<Product> = normalizePaginatedProducts(payload);
 
+	// Determine title based on filters
+	let title = "All Simulators";
+	if (search.simTypeIds === "1") {
+		title = "Formula 1 Simulators";
+	} else if (search.simTypeIds === "2") {
+		title = "GT Racing Simulators";
+	}
 
 	return (
-		// <main className="min-h-full w-full relative ">
-		// 	<div className="grid grid-cols-1 gap-12 h-auto mt-6 px-20 2xl:max-w-[1920px] mx-auto">
-		// 		<section>
-		// 			<h2 className="text-3xl font-bold mb-6">All</h2>
-		// 			<div className=" grid sm:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5  gap-x-6 gap-y-10">
-		// 				{products.map((product: Product) => (
-		// 					<ProductCard key={product.id} product={product} />
-		// 				))}
-		// 			</div>
-		// 			<PaginationSection currentPage={page} totalPages={15} basePath="/page" />
-		// 		</section>
-		// 	</div>
-		// </main>
 		<main className="w-full">
-			<ProductListWithMap products={data} title="All Simulators" page={meta.page} totalPages={15} />
+			<ProductListWithMap products={data} title={title} page={meta.page} totalPages={meta.totalPages || 15} />
 		</main>
 	);
 }

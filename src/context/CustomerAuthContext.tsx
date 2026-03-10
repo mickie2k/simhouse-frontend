@@ -4,9 +4,9 @@ import { Customer } from "@/types";
 import { createAuthContext } from "./AuthContext";
 
 const { Provider: CustomerAuthProvider, useAuth: useCustomerAuth } = createAuthContext<Customer>({
-    me: "/auth/customer-auth/me",
-    login: "/auth/customer-auth/login",
-    logout: "/auth/customer-auth/logout",
+    me: "/user/profile",
+    login: "/auth/customer/login",
+    logout: "/auth/customer/logout",
     loginRedirect: "/dashboard",
 });
 
