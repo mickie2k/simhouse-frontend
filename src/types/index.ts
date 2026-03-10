@@ -1,3 +1,4 @@
+import { inter } from "@/lib/fonts";
 import { Key } from "react";
 
 // Simulator (Product) — matches GET /simulator/:id (with mod+brand+host included)
@@ -133,12 +134,12 @@ export type PaginatedResponse<T> = {
     };
 };
 
-export interface Customer {
+export interface User {
     username: string;
     firstName: string;
     lastName: string;
     email: string;
 }
-
-// Keep for backward compatibility — alias the old name
-export type BookingDetailSchedule = BookingDetail;
+export interface Customer extends User {}
+export interface Host extends User {}
+export interface Admin extends User {}

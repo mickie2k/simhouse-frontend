@@ -1,5 +1,5 @@
 import Navbar from "@/components/navbar/navbar";
-import Auth from "@/context/AuthContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 
 export default function CustomerLayout({
 	children,
@@ -7,13 +7,11 @@ export default function CustomerLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<>
+		<CustomerAuthProvider>
 			<div id="_next">
-				<Auth>
-					<Navbar />
-				</Auth>
+				<Navbar />
 				{children}
 			</div>
-		</>
+		</CustomerAuthProvider>
 	);
 }

@@ -1,5 +1,5 @@
-import Header from "@/components/navbar/navbar";
-import Auth from "@/context/AuthContext";
+import HostNavbar from "@/components/navbar/hostNavbar";
+import { HostAuthProvider } from "@/context/HostAuthContext";
 
 export default function HostLayout({
     children,
@@ -7,13 +7,11 @@ export default function HostLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <>
+        <HostAuthProvider>
             <div id="_next">
-                <Auth>
-                    <Header />
-                </Auth>
+                <HostNavbar />
                 {children}
             </div>
-        </>
+        </HostAuthProvider>
     );
 }

@@ -1,19 +1,15 @@
 "use client";
 import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AuthContext } from "@/context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
-import { axiosJWTInstance } from "@/lib/http";
-import cookies from "js-cookie";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 export default function Navbar() {
 	const pathname = usePathname();
-	const router = useRouter();
 	const [isMenu, setisMenu] = useState(false);
 	const [scroll, setScroll] = useState(false);
-	const { username, setUsername, isLogin, setIsLogin } =
-		useContext(AuthContext);
+	const { user, isAuthenticated, logout } = useCustomerAuth();
 
 	const changeNavbar = () => {
 		if (window.scrollY >= 80) {
@@ -41,18 +37,6 @@ export default function Navbar() {
 	function disableMenu() {
 		setisMenu(false);
 	}
-	async function logout() {
-		try {
-			await axiosJWTInstance.get("auth/customer/logout");
-			setIsLogin(false);
-			setUsername("");
-			cookies.remove("isAuth");
-			alert("Logout success");
-			router.push("/");
-		} catch (error) {
-			alert("Logout failed");
-		}
-	}
 
 	function loginComponent() {
 		return (
@@ -62,7 +46,7 @@ export default function Navbar() {
 				onMouseLeave={disableMenu}
 			>
 				<div className="flex gap-2 py-3">
-					<FaUserCircle /> <span className="text-sm">{username}</span>
+					<FaUserCircle /> <span className="text-sm">{user?.username}</span>
 				</div>
 
 				<div
@@ -110,7 +94,7 @@ export default function Navbar() {
 				<Link href="/" className="text-sm">
 					Become a Host
 				</Link>
-				{isLogin ? (
+				{isAuthenticated ? (
 					loginComponent()
 				) : (
 					<Link href="/login" className="text-sm py-3 cursor-pointer">

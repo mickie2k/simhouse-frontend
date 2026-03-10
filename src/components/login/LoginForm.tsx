@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent } from "react";
+import { FormEvent, useEffect } from "react";
+import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
-import { axiosInstance } from "@/lib/http";
-import cookies from "js-cookie";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 export default function LoginhtmlForm() {
 	const router = useRouter();
+	const { login, isAuthenticated } = useCustomerAuth();
+
+	useEffect(() => {
+		if (isAuthenticated) {
+			router.push("/");
+		}
+	}, [isAuthenticated, router]);
+
 	const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -17,14 +25,13 @@ export default function LoginhtmlForm() {
 			formDataJson[key] = value;
 		});
 
-		try {
-			await axiosInstance.post("auth/customer/login", formDataJson);
-			cookies.set("isAuth", "true");
-			router.push("/");
-		} catch (error) {
-			alert("Your username or password is incorrect");
-		}
+		await login(formDataJson);
 	};
+
+	const onGoogleSubmit = async () => {
+		window.open(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, "_self");
+	}
+
 	return (
 		<section className="bg-white mt-7">
 			<div className="flex flex-col items-center  px-6 py-0 mx-auto md:h-full lg:py-0 ">
@@ -38,20 +45,20 @@ export default function LoginhtmlForm() {
 						</h1>
 						<form className="space-y-4 md:space-y-6" onSubmit={onSubmit}>
 							<div>
-						<label
-								htmlFor="email"
-								className="block mb-2 text-sm font-medium text-gray-900 "
-							>
-								Your Email
-							</label>
-							<input
-								type="email"
-								name="email"
-								id="email"
-								className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
-								placeholder="name@example.com"
-								required
-							/>
+								<label
+									htmlFor="email"
+									className="block mb-2 text-sm font-medium text-gray-900 "
+								>
+									Your Email
+								</label>
+								<input
+									type="email"
+									name="email"
+									id="email"
+									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
+									placeholder="name@example.com"
+									required
+								/>
 							</div>
 							<div>
 								<label
@@ -86,6 +93,14 @@ export default function LoginhtmlForm() {
 								</Link>
 							</p>
 						</form>
+						<div className="flex items-center justify-between gap-4">
+							<hr className="border-border w-full" />
+							<span>or</span>
+							<hr className="border-border w-full" />
+						</div>
+						<div>
+							<button onClick={onGoogleSubmit} className="w-full border border-border bg-none hover:bg-input/30  flex items-center justify-center gap-2 font-medium rounded-lg text-sm px-5 py-2.5 text-center cursor-pointer transition"> <FcGoogle size={24} /> Login with Google</button>
+						</div>
 					</div>
 				</div>
 			</div>
