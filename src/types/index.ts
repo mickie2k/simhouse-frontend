@@ -133,5 +133,12 @@ export type PaginatedResponse<T> = {
     };
 };
 
+export interface Customer {
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+}
+
 // Keep for backward compatibility — alias the old name
 export type BookingDetailSchedule = BookingDetail;

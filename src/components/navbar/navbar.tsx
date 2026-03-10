@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import "@/app/globals.css";
 import { useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AuthContext } from "@/context/AuthContext";
