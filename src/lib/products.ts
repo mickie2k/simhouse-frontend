@@ -1,6 +1,6 @@
 import { PaginatedResponse, Product } from "@/types";
 
-type ProductApiResponse = {
+export type ProductApiResponse = {
     id: number;
     simListName: string;
     pricePerHour: number | string;
@@ -17,6 +17,9 @@ type ProductApiResponse = {
     mod?: Product["mod"];
     host?: Product["host"];
     typeList?: Product["typeList"];
+    city: string;
+    province?: string;
+    country: string;
 };
 
 function toNumber(value: number | string) {
@@ -24,25 +27,33 @@ function toNumber(value: number | string) {
     return Number.isFinite(parsedValue) ? parsedValue : 0;
 }
 
-export function normalizeProduct(product: ProductApiResponse): Product {
-    const pricePerHour = toNumber(product.pricePerHour);
-    const latitude = toNumber(product.latitude);
-    const longitude = toNumber(product.longitude);
+export function normalizeImagePath(imagePath: string) {
+    return formatImageUrl(imagePath);
+}
 
-    product.firstImage = formatImageUrl(product.firstImage);
-    product.secondImage = formatImageUrl(product.secondImage);
-    product.thirdImage = formatImageUrl(product.thirdImage);
-
+export function normalizeProduct(
+    product: ProductApiResponse | Product,
+): Product {
     return {
-        ...product,
-        SimID: product.id,
-        SimListName: product.simListName,
-        PricePerHour: pricePerHour,
-        Lat: latitude,
-        Long: longitude,
-        pricePerHour,
-        latitude,
-        longitude,
+        id: product.id,
+        simListName: product.simListName,
+        pricePerHour: toNumber(product.pricePerHour),
+        listDescription: product.listDescription,
+        addressDetail: product.addressDetail,
+        cityId: product.cityId,
+        latitude: toNumber(product.latitude),
+        longitude: toNumber(product.longitude),
+        firstImage: normalizeImagePath(product.firstImage),
+        secondImage: normalizeImagePath(product.secondImage),
+        thirdImage: normalizeImagePath(product.thirdImage),
+        hostId: product.hostId,
+        modId: product.modId,
+        city: product.city,
+        province: product.province,
+        country: product.country,
+        mod: product.mod,
+        host: product.host,
+        typeList: product.typeList,
     };
 }
 

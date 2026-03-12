@@ -4,23 +4,25 @@ import Image from "next/image";
 import { MdPending, MdCancel } from "react-icons/md";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { normalizeProduct } from "@/lib/products";
+import { useEffect, useState } from "react";
+import { axiosJWTInstance } from "@/lib/http";
 
-export default async function BookingCard({ booking }: { booking: Booking }) {
-	let product: Product | null = null;
 
-	try {
-		const res = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}simulator/${booking.simId}`,
-			{
-				next: { revalidate: 600 }, // Cache for 10 minutes
-			}
-		);
-		if (res.ok) {
-			product = normalizeProduct(await res.json());
-		}
-	} catch (error) {
-		console.error("Failed to fetch product:", error);
-	}
+export default function BookingCard({ booking }: { booking: Booking }) {
+	const [product, setProduct] = useState<Product | null>(null);
+
+	useEffect(() => {
+		const fetchProduct = axiosJWTInstance.get(`/simulator/${booking.simId}`).then((response) => {
+			setProduct(normalizeProduct(response.data));
+		}).catch((error) => {
+			console.error("Failed to fetch product for booking:", error);
+		});
+
+		return () => {
+			// Cleanup if needed
+		};
+	}, [booking]);
+
 
 	// Fallback if product fetch fails
 	if (!product) {

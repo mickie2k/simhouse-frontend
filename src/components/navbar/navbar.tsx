@@ -84,7 +84,7 @@ export default function Navbar() {
 		<header
 			className={
 				(scroll ? "navbar-scroll" : "navbar-noscroll") +
-				" flex items-center justify-between px-20 py-5 h-20 sticky top-0 z-10 w-full transition-all ease-in-out duration-300"
+				" flex items-center justify-between px-20 py-5 h-20 sticky top-0 w-full transition-all ease-in-out duration-300 z-50"
 			}
 		>
 			<Link href="/">

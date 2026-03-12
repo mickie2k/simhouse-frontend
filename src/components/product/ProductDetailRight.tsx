@@ -7,10 +7,10 @@ import {
 	useState,
 } from "react";
 import { DateContext } from "./ProductDetail";
-import { checkisLoginByCookie } from "@/lib/auth";
 import { axiosJWTInstance } from "@/lib/http";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "../loading/LoadingComponent";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 export default function ProductDetailRight({
 	product,
@@ -24,6 +24,7 @@ export default function ProductDetailRight({
 	const [total, setTotal] = useState<number>(0);
 	const [loading, isLoading] = useState<boolean>(false);
 	const { date, setDate } = useContext(DateContext);
+	const { isAuthenticated, loading: authLoading } = useCustomerAuth();
 	const router = useRouter();
 
 	const options = {
@@ -46,25 +47,31 @@ export default function ProductDetailRight({
 
 	async function onSubmit() {
 		isLoading(true);
-		if (checkisLoginByCookie() === false) {
+		if (authLoading) {
+			isLoading(false);
+			return;
+		}
+
+		if (!isAuthenticated) {
 			alert("Please login first");
+			router.push("/login");
 			isLoading(false);
 			return;
 		}
 
 		try {
-		const response = await axiosJWTInstance.post<{
-			message?: string;
-			bookingId?: number;
-		}>("booking", {
-			simId: product.id,
-			scheduleId: bookList,
-		});
+			const response = await axiosJWTInstance.post<{
+				message?: string;
+				bookingId?: number;
+			}>("booking", {
+				simId: product.id,
+				scheduleId: bookList,
+			});
 
 			const data = response.data;
 			isLoading(false);
 
-		if (data.message && data.bookingId) {
+			if (data.message && data.bookingId) {
 				router.push(`/dashboard/booking/${data.bookingId}?justbook=1`);
 			} else {
 				alert("Booking failed");
@@ -83,10 +90,10 @@ export default function ProductDetailRight({
 			{loading && <LoadingComponent />}
 			<div className="w-1/3 sticky h-fit  top-28">
 				<div className="rounded-xl border p-6 items-center border-gray-200 flex flex-col gap-4 shadow-[0px_6px_16px_rgba(0,0,0,0.1)]">
-				<h4 className="text-xl text-start w-full font-medium text-black2">
-					${product.pricePerHour}
-					<span className="font-light text-secondText text-base"> / hrs</span>
-				</h4>
+					<h4 className="text-xl text-start w-full font-medium text-black2">
+						${product.pricePerHour}
+						<span className="font-light text-secondText text-base"> / hrs</span>
+					</h4>
 					<button
 						className="w-full text-start text-sm group border font-normal text-gray-500 border-gray-300 rounded-lg grid grid-cols-2  hover:border-black2"
 						onClick={onClickDate}
@@ -114,7 +121,7 @@ export default function ProductDetailRight({
 					</button>
 					<div className="min-h-[52px] w-full text-center">
 						<button
-							disabled={bookList.length === 0}
+							disabled={bookList.length === 0 || authLoading}
 							onClick={onSubmit}
 							type="submit"
 							className="w-full text-white bg-primary1 hover:bg-primary1_hover focus:bg-primary1_hover focus:outline-none disabled:opacity-45 disabled:hover:bg-primary1  font-medium rounded-lg text-base px-5 py-3.5 text-center focus:py-3 focus:w-[97%]"
@@ -122,12 +129,12 @@ export default function ProductDetailRight({
 							Reserve
 						</button>
 					</div>
-				<div className="text-black2 font-normal text-base justify-between flex w-full">
-					<span>
-						${product.pricePerHour} x {bookList.length} hours
-					</span>
-					<span>${total}</span>
-				</div>
+					<div className="text-black2 font-normal text-base justify-between flex w-full">
+						<span>
+							${product.pricePerHour} x {bookList.length} hours
+						</span>
+						<span>${total}</span>
+					</div>
 					<hr className="w-full" />
 					<div className="text-black2 font-bold text-base justify-between flex w-full">
 						<span>Total</span>

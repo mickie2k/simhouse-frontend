@@ -1,7 +1,7 @@
 import { PaginatedResponse, Product } from "@/types";
 import ProductListWithMap from "@/components/map/ProductListWithMap";
 import type { Metadata } from "next";
-import { normalizePaginatedProducts } from "@/lib/products";
+import { normalizePaginatedProducts, ProductApiResponse } from "@/lib/products";
 
 type Props = { params: Promise<{ page: number; type: string }> };
 
@@ -34,7 +34,7 @@ export default async function TypePage({ params }: Props) {
 	if (!res.ok) {
 		throw new Error("Failed to fetch products");
 	}
-	const payload: PaginatedResponse<Product> = await res.json();
+	const payload: PaginatedResponse<ProductApiResponse> = await res.json();
 	const products: Product[] = normalizePaginatedProducts(payload).data;
 
 	const title = typeID === 1 ? "Formula Simulators" : "GT Racing Simulators";

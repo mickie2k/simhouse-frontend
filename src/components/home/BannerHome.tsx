@@ -1,15 +1,18 @@
 import Image from "next/image";
 import bannerPic from "@/image/bannerPic.webp";
+import SearchBox from "./SearchBox";
+
 export default function BannerHome() {
 	return (
-		<div className="h-[560px] 2xl:h-[70vh] flex justify-between items-center w-full bg-gradient-to-t from-[#101010] to-navblack text-white">
-			<div className="flex flex-col ml-20 w-2/3 ">
-				<h1 className="text-8xl font-black">
-					Rent SimRacing <br />
+		<div className="h-[560px] 2xl:h-[70vh] flex justify-between items-center w-full bg-gradient-to-t from-[#101010] to-navblack text-white relative">
+			<div className="flex flex-col ml-20 w-full mr-20 md:mr-0 md:w-2/3 z-10">
+				<h1 className="hidden md:block text-8xl font-black">
+					Rent Simracing <br />
 					here!
 				</h1>
+				<SearchBox />
 			</div>
-			<div className="flex items-end py-4 justify-start h-full w-1/3 overflow-visible">
+			<div className="hidden md:flex items-end py-4 justify-start h-full w-1/3 overflow-visible">
 				<Image
 					src={bannerPic}
 					alt="Picture of SimRacing"

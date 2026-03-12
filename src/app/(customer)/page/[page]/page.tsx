@@ -2,7 +2,7 @@ import { Product, PaginatedResponse } from "@/types";
 import type { Metadata } from "next";
 import ProductCard from "@/components/product/ProductCard";
 import PaginationSection from "@/components/pagination/PaginationSection";
-import { normalizePaginatedProducts } from "@/lib/products";
+import { normalizePaginatedProducts, ProductApiResponse } from "@/lib/products";
 import ProductListWithMap from "@/components/map/ProductListWithMap";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
 	// Build query parameters
 	const queryParams = new URLSearchParams();
-	queryParams.set("limit", search.limit?.toString() || "30");
+	queryParams.set("limit", "30");
 	queryParams.set("page", page.toString());
 
 	// Add search filters if present
@@ -47,8 +47,9 @@ export default async function Page({ params, searchParams }: PageProps) {
 	if (!res.ok) {
 		throw new Error("Failed to fetch products");
 	}
-	const payload: PaginatedResponse<Product> = await res.json();
+	const payload: PaginatedResponse<ProductApiResponse> = await res.json();
 	const { data, meta }: PaginatedResponse<Product> = normalizePaginatedProducts(payload);
+
 
 	// Determine title based on filters
 	let title = "All Simulators";

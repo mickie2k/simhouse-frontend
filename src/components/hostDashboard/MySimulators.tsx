@@ -45,8 +45,8 @@ const MySimulators = ({ simulators }: MySimulatorsProps) => {
                             key={filter.id}
                             onClick={() => setActiveFilter(filter.id)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeFilter === filter.id
-                                    ? "bg-black text-white"
-                                    : "bg-white border border-borderColor1 text-secondText hover:border-black"
+                                ? "bg-black text-white"
+                                : "bg-white border border-borderColor1 text-secondText hover:border-black"
                                 }`}
                         >
                             {filter.label}
@@ -74,7 +74,7 @@ const MySimulators = ({ simulators }: MySimulatorsProps) => {
 
                     {/* Simulator Cards */}
                     {filteredSimulators.map((simulator) => (
-                        <SimulatorHostCard key={simulator.SimID} product={simulator} />
+                        <SimulatorHostCard key={simulator.id} product={simulator} />
                     ))}
                 </div>
             </div>

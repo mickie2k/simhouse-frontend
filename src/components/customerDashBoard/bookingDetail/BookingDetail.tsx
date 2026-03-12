@@ -1,4 +1,4 @@
-import { BookingDetail as BookingDetailType } from "@/types";
+import { BookingDetail } from "@/types";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 import { MdCancel, MdPending } from "react-icons/md";
 import { RiExternalLinkLine } from "react-icons/ri";
@@ -7,20 +7,19 @@ import Image from "next/image";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import CancelBookingButton from "./CancelBookingButton";
+import { normalizeImagePath } from "@/lib/products";
 
-export default function BookingDetail({
+export default function BookingDetailBody({
 	bookingDetail,
 	justbook,
 }: {
-	bookingDetail: BookingDetailType[];
+	bookingDetail: BookingDetail;
 	justbook: string;
 }) {
-	if (!bookingDetail || bookingDetail.length === 0) {
+	if (!bookingDetail) {
 		return <div className="text-center">No booking detail found</div>;
 	}
-
-	// The backend returns an array but we only need the first booking
-	const booking = bookingDetail[0];
+	const booking = bookingDetail;
 	const { simulator, bookingList } = booking;
 	const host = simulator.host;
 
@@ -94,7 +93,7 @@ export default function BookingDetail({
 			<div className="grid grid-cols-3 gap-x-20 gap-y-8 mt-10">
 				<div className="flex flex-col gap-6 col-span-2 overflow-hidden">
 					<Image
-						src={simulator.firstImage}
+						src={normalizeImagePath(simulator.firstImage)}
 						width={400}
 						height={400}
 						alt={simulator.id + "_image"}
@@ -152,7 +151,7 @@ export default function BookingDetail({
 					<div className="flex flex-col gap-2">
 						<h1 className="text-xl font-medium">Date/Time</h1>
 						<div className="flex-row flex justify-between">
-							<div className="text-base font-normal h-full flex flex-col">
+							<div className="text-base font-light h-full flex flex-col">
 								<p>{weekday[day]}</p>
 								<p>{date}</p>
 								<p className="mt-auto text-xs text-secondText pb-1">

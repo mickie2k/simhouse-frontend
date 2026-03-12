@@ -63,7 +63,6 @@ export default function BookingSchedule({
 					`simulator/${id}/schedule`
 				);
 				const data = response.data;
-				console.log(data)
 				const map: Record<string, Schedule[]> = {};
 				for (const item of data) {
 					// Normalise date to "YYYY-MM-DD" in Bangkok timezone

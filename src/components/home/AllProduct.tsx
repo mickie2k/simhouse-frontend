@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ProductCard from "../product/ProductCard";
 import { PaginatedResponse, Product } from "@/types";
-import { formatImageUrl, normalizePaginatedProducts } from "@/lib/products";
+import { ProductApiResponse, normalizeProduct } from "@/lib/products";
 
 function AllProductFallback() {
 	return (
@@ -39,19 +39,14 @@ export default async function AllProduct() {
 			return <AllProductFallback />;
 		}
 
-		const products: Product[] = await res.json();
-		products.forEach((product) => {
-			product.firstImage = formatImageUrl(product.firstImage);
-			product.secondImage = formatImageUrl(product.secondImage);
-			product.thirdImage = formatImageUrl(product.thirdImage);
-		});
-
+		const products: ProductApiResponse[] = await res.json();
+		const normalizedProducts = products.map((product) => normalizeProduct(product));
 
 		return (
 			<section>
 				<h2 className="text-3xl font-bold mb-6">All</h2>
 				<div className="grid sm:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5  gap-x-6 gap-y-10">
-					{products.map((product) => (
+					{normalizedProducts.map((product) => (
 						<ProductCard key={product.id} product={product} />
 					))}
 				</div>

@@ -21,12 +21,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
 			</div>
 			<div className="flex flex-col grow justify-between ">
 				<div className="text-base text-black2">
-					<h3 className="text-base">{product.simListName}</h3>
+					<h3 className="text-base">{product.mod?.modelName} <span aria-hidden="true">&nbsp;· &nbsp;</span> {product.mod?.brand?.brandName}</h3>
 					<div className="text-secondText text-sm">
-						<span>{product.mod?.modelName}</span>
+						<span>{product.city}, </span>
 
-						<span aria-hidden="true">&nbsp;· &nbsp;</span>
-						<span>{product.mod?.brand?.brandName}</span>
+
+						<span>{product.country}</span>
 					</div>
 				</div>
 				<div className="">

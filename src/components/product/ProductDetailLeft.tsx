@@ -4,12 +4,12 @@ export default function ProductDetailLeft({ product }: { product: Product }) {
 	return (
 		<div className="w-7/12 flex-col flex gap-8">
 			<div>
-				<h1 className="text-[22px] font-medium">Sim Host by {product.host?.firstName}</h1>
-				<div className="text-gray-500 text-sm mt-1">
-					<span>{product.mod?.modelName}</span>
+				<h1 className="text-[22px] font-medium">{product.mod?.modelName}
 
 					<span aria-hidden="true">&nbsp;· &nbsp;</span>
-					<span>{product.mod?.brand?.brandName}</span>
+					{product.mod?.brand?.brandName} </h1>
+				<div className="text-gray-500 text-sm mt-1">
+					<span>Host by {product.host?.firstName} {product.host?.lastName}</span>
 				</div>
 			</div>
 			<hr className="mb-4" />
@@ -47,6 +47,6 @@ export default function ProductDetailLeft({ product }: { product: Product }) {
 					<span>{product.host?.firstName + " " + product.host?.lastName}</span>
 				</div>
 			</div>
-		</div>
+		</div >
 	);
 }

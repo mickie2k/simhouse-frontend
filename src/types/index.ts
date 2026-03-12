@@ -1,6 +1,3 @@
-import { inter } from "@/lib/fonts";
-import { Key } from "react";
-
 // Simulator (Product) — matches GET /simulator/:id (with mod+brand+host included)
 export type SimulatorMod = {
     id: number;
@@ -14,16 +11,11 @@ export type SimulatorMod = {
 };
 
 export type Product = {
-    SimID?: Key | null;
-    SimListName?: string;
-    PricePerHour?: number;
-    Lat?: number;
-    Long?: number;
     id: number;
     simListName: string;
     pricePerHour: number;
-    listDescription: string | null;
-    addressDetail: string;
+    listDescription?: string | null;
+    addressDetail?: string;
     cityId: number;
     latitude: number;
     longitude: number;
@@ -32,14 +24,17 @@ export type Product = {
     thirdImage: string;
     hostId: number;
     modId: number;
+    city: string;
+    province?: string;
+    country: string;
     // Included relations (present when fetched via findOne with includes)
     mod?: SimulatorMod;
     host?: {
         id: number;
         firstName: string;
         lastName: string;
-        phone: string;
-        email: string;
+        phone?: string;
+        email?: string;
     };
     typeList?: {
         simTypeId: number;
@@ -99,26 +94,7 @@ export type BookingDetail = {
     customerId: number;
     simId: number;
     bookingList: BookingListItem[];
-    simulator: {
-        id: number;
-        simListName: string;
-        pricePerHour: number;
-        listDescription: string | null;
-        addressDetail: string;
-        latitude: number;
-        longitude: number;
-        firstImage: string;
-        secondImage: string;
-        thirdImage: string;
-        hostId: number;
-        host: {
-            id: number;
-            firstName: string;
-            lastName: string;
-            phone: string;
-            email: string;
-        };
-    };
+    simulator: Product;
 };
 
 // Paginated response wrapper — matches GET /simulator (list)

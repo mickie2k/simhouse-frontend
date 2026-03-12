@@ -1,6 +1,6 @@
 "use client";
 import { Product } from "@/types";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import Image from "next/image";
 import SaveProduct from "./SaveProduct";
 import ProductDetailLeft from "./ProductDetailLeft";
@@ -20,6 +20,10 @@ export default function ProductDetail({ product }: { product: Product }) {
 	const [modal, setModal] = useState(false);
 	const [bookList, setBookList] = useState<number[]>([]);
 	const [date, setDate] = useState<string>("");
+
+	useEffect(() => {
+		Modal.setAppElement("body");
+	}, []);
 
 	const customStyles = {
 		overlay: {
@@ -44,8 +48,6 @@ export default function ProductDetail({ product }: { product: Product }) {
 			flexDirection: "column" as const,
 		},
 	};
-	Modal.setAppElement("body");
-
 	function afterOpenModal() {
 		// references are now sync'd and can be accessed.
 
@@ -87,7 +89,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 						target="_blank"
 						className="text-secondText text-sm underline"
 					>
-						{product.addressDetail}
+						{product.addressDetail}, {product.city}, {product.country}
 					</a>
 				</div>
 
