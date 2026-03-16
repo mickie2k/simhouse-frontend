@@ -7,6 +7,7 @@ const { Provider: HostAuthProvider, useAuth: useHostAuth } = createAuthContext<H
     me: "/host/profile",
     login: "/auth/host/login",
     logout: "/auth/host/logout",
+    logoutRedirect: "/hosting/login",
     loginRedirect: "/hosting",
 });
 

@@ -4,11 +4,21 @@ import Link from "next/link";
 import { FormEvent, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
-import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { AuthContextType } from "@/context/AuthContext";
 
-export default function LoginhtmlForm() {
+
+
+export default function LoginhtmlForm(
+	{
+		authContext,
+		googleEndpoint,
+	}: {
+		authContext: () => AuthContextType<any>;
+		googleEndpoint: string;
+	}
+) {
 	const router = useRouter();
-	const { login, isAuthenticated } = useCustomerAuth();
+	const { login, isAuthenticated } = authContext();
 
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -29,7 +39,7 @@ export default function LoginhtmlForm() {
 	};
 
 	const onGoogleSubmit = async () => {
-		window.open(`${process.env.NEXT_PUBLIC_API_URL}auth/customer/google`, "_self");
+		window.open(`${process.env.NEXT_PUBLIC_API_URL}${googleEndpoint}`, "_self");
 	}
 
 	return (

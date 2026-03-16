@@ -97,7 +97,7 @@ export default function Navbar() {
 				{isAuthenticated ? (
 					loginComponent()
 				) : (
-					<Link href="/login" className="text-sm py-3 cursor-pointer">
+					<Link href="/customer/login" className="text-sm py-3 cursor-pointer">
 						Login
 					</Link>
 				)}

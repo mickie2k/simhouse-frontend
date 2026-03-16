@@ -19,11 +19,12 @@ interface AuthOptions {
 	me: string;
 	login: string;
 	logout: string;
+	logoutRedirect: string;
 	loginRedirect: string;
 }
 
 export function createAuthContext<T>(options: AuthOptions) {
-	const { me, login: loginEndpoint, logout: logoutEndpoint, loginRedirect } = options;
+	const { me, login: loginEndpoint, logout: logoutEndpoint, loginRedirect, logoutRedirect } = options;
 
 	const Context = createContext<AuthContextType<T>>({
 		user: null,
@@ -86,12 +87,12 @@ export function createAuthContext<T>(options: AuthOptions) {
 				const response = await axiosJWTInstance.get(logoutEndpoint);
 				if (response.status === 200) {
 					setUser(null);
-					router.push("/login");
+					router.push(logoutRedirect);
 				}
 			} catch (error) {
 				console.error("Logout failed:", error);
 			}
-		}, [router]);
+		}, [router, logoutRedirect]);
 
 		const value = useMemo(() => ({
 			user,

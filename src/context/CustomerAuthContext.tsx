@@ -7,6 +7,7 @@ const { Provider: CustomerAuthProvider, useAuth: useCustomerAuth } = createAuthC
     me: "/user/profile",
     login: "/auth/customer/login",
     logout: "/auth/customer/logout",
+    logoutRedirect: "/customer/login",
     loginRedirect: "/dashboard",
 });
 
