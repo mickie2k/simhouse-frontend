@@ -11,6 +11,7 @@ import { axiosJWTInstance } from "@/lib/http";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "../loading/LoadingComponent";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { start } from "repl";
 
 export default function ProductDetailRight({
 	product,
@@ -23,7 +24,7 @@ export default function ProductDetailRight({
 }) {
 	const [total, setTotal] = useState<number>(0);
 	const [loading, isLoading] = useState<boolean>(false);
-	const { date, setDate } = useContext(DateContext);
+	const { date, startTime, endTime } = useContext(DateContext);
 	const { isAuthenticated, loading: authLoading } = useCustomerAuth();
 	const router = useRouter();
 
@@ -36,10 +37,7 @@ export default function ProductDetailRight({
 	const formattedDate = new Date(date).toLocaleDateString("en-US", options);
 	useEffect(() => {
 		setTotal(product.pricePerHour * bookList.length);
-		if (bookList.length === 0) {
-			setDate("");
-		}
-	}, [bookList, product.pricePerHour, setDate]);
+	}, [bookList, product.pricePerHour]);
 
 	function onClickDate() {
 		setModal(true);
@@ -108,15 +106,15 @@ export default function ProductDetailRight({
 							<label className="text-xs font-bold text-black" htmlFor="">
 								START TIME
 							</label>
-							<span>--:-- PM</span>
-							{/* รอก่อนขกทำ */}
+							<span>{startTime}</span>
+
 						</div>
 						<div className="flex flex-col  p-3">
 							<label className="text-xs font-bold text-black" htmlFor="">
 								END TIME
 							</label>
-							<span>--:-- PM</span>
-							{/* รอก่อนขกทำ */}
+							<span>{endTime}</span>
+
 						</div>
 					</button>
 					<div className="min-h-[52px] w-full text-center">

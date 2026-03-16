@@ -12,6 +12,8 @@ export default function ModalReserve({
 	onClose: () => void;
 	bookList: number[];
 	setBookList: React.Dispatch<React.SetStateAction<number[]>>;
+	startTime?: string;
+	endTime?: string;
 	product: Product;
 }) {
 	const [total, setTotal] = useState<number>(0);
@@ -74,6 +76,7 @@ export default function ModalReserve({
 			<div className="flex-1 overflow-hidden mt-4">
 				<BookingSchedule
 					addList={addList}
+					setBookList={setBookList}
 					bookList={bookList}
 					id={product.id}
 				/>

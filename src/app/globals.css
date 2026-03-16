@@ -146,6 +146,7 @@ body {
 .autocomplete-control {
     margin: 24px;
     background: #fff;
+    color: black;
 }
 
 .autocomplete-container {

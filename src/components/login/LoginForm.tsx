@@ -29,7 +29,7 @@ export default function LoginhtmlForm() {
 	};
 
 	const onGoogleSubmit = async () => {
-		window.open(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, "_self");
+		window.open(`${process.env.NEXT_PUBLIC_API_URL}auth/customer/google`, "_self");
 	}
 
 	return (

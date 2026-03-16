@@ -33,10 +33,12 @@ function toLocalDateStr(d: Date) {
 
 export default function BookingSchedule({
 	addList,
+	setBookList,
 	bookList,
 	id,
 }: {
 	addList: (id: number) => void;
+	setBookList: React.Dispatch<React.SetStateAction<number[]>>;
 	bookList: number[];
 	id: number;
 }) {
@@ -50,7 +52,7 @@ export default function BookingSchedule({
 	const [calMonth, setCalMonth] = useState(new Date().getMonth()); // 0-indexed
 
 	// Selected date (local date string "YYYY-MM-DD")
-	const { date: selectedDate, setDate: setSelectedDate } = useContext(DateContext);
+	const { date: selectedDate, setDate: setSelectedDate, startTime, setStartTime, endTime, setEndTime } = useContext(DateContext);
 
 	// ── Fetch schedule ──────────────────────────────────────────────────────────
 	useEffect(() => {
@@ -121,8 +123,47 @@ export default function BookingSchedule({
 		if (!scheduleMap[key]) return; // no availability
 		// If different date selected, clear bookList context
 		if (selectedDate !== key) {
+
 			setSelectedDate(key);
+			setBookList([]);
+			setStartTime("");
+			setEndTime("");
 		}
+	}
+
+	function syncTimeRange(dateKey: string, slotIds: number[]) {
+		const slotsOnDate = scheduleMap[dateKey] ?? [];
+		const selectedRanges = slotsOnDate.filter((slot) => slotIds.includes(slot.id));
+
+		if (selectedRanges.length === 0) {
+			setStartTime("");
+			setEndTime("");
+			return;
+		}
+
+		const minStartTime = selectedRanges.reduce((min, slot) =>
+			slot.startTime < min ? slot.startTime : min,
+			selectedRanges[0].startTime
+		);
+		const maxEndTime = selectedRanges.reduce((max, slot) =>
+			slot.endTime > max ? slot.endTime : max,
+			selectedRanges[0].endTime
+		);
+
+		setStartTime(minStartTime);
+		setEndTime(maxEndTime);
+	}
+
+	function addListHandler(id: number) {
+		if (!selectedDate) return;
+
+		const isAlreadySelected = bookList.includes(id);
+		const nextBookList = isAlreadySelected
+			? bookList.filter((item) => item !== id)
+			: [...bookList, id];
+
+		addList(id);
+		syncTimeRange(selectedDate, nextBookList);
 	}
 
 	// Slots for selected date
@@ -274,7 +315,7 @@ export default function BookingSchedule({
 										<BookingTime
 											key={slot.id}
 											id={slot.id}
-											addList={addList}
+											addList={addListHandler}
 											schedule={slot}
 											bookList={bookList}
 										/>

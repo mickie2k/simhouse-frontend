@@ -1,5 +1,6 @@
 import ProductMap from "./ProductMap";
 import { Product } from "@/types";
+
 export default function ProductDetailLeft({ product }: { product: Product }) {
 	return (
 		<div className="w-7/12 flex-col flex gap-8">

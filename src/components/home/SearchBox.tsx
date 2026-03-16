@@ -1,20 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import PlaceAutocomplete from "./PlaceAutocomplete";
 
 
-type LocationData = {
-    type: "city" | "coordinates";
-    cityId?: string;
-    lat?: number;
-    lng?: number;
-};
-
 type SearchFormData = {
-    location: LocationData | null;
+    location: string | null;
     simTypeId: string;
     date: string;
 };
@@ -26,30 +19,12 @@ export default function SearchBox() {
         simTypeId: "",
         date: "",
     });
-    const handlePlaceSelect = (place: google.maps.places.PlaceResult | null) => {
-        const location = place?.geometry?.location;
-        if (!location) {
-            setFormData((prev) => ({ ...prev, location: null }));
-            return;
-        }
+    const [selectedPlace, setSelectedPlace] =
+        useState<google.maps.places.PlaceResult | null>(null);
 
-        const lat = typeof location.lat === "function" ? location.lat() : location.lat;
-        const lng = typeof location.lng === "function" ? location.lng() : location.lng;
-
-        if (typeof lat === "number" && typeof lng === "number") {
-            setFormData((prev) => ({
-                ...prev,
-                location: {
-                    type: "coordinates",
-                    lat,
-                    lng,
-                },
-            }));
-            return;
-        }
-
-        setFormData((prev) => ({ ...prev, location: null }));
-    };
+    useEffect(() => {
+        console.log("Selected place:", selectedPlace);
+    }, [selectedPlace]);
 
 
 
@@ -59,17 +34,13 @@ export default function SearchBox() {
 
         // Handle location data
         if (formData.location) {
-            if (formData.location.type === "city" && formData.location.cityId) {
-                params.set("cityId", formData.location.cityId);
-            } else if (formData.location.type === "coordinates") {
-                if (formData.location.lat !== undefined) {
-                    params.set("lat", formData.location.lat.toString());
-                }
-                if (formData.location.lng !== undefined) {
-                    params.set("lng", formData.location.lng.toString());
-                }
-            }
+            params.set("location", formData.location);
         }
+
+        if (formData.simTypeId) {
+            params.set("simTypeIds", formData.simTypeId);
+        }
+
 
         if (formData.simTypeId) {
             params.set("simTypeIds", formData.simTypeId);
@@ -83,11 +54,7 @@ export default function SearchBox() {
         router.push(`/page/1?${params.toString()}`);
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") {
-            handleSearch();
-        }
-    };
+
 
     return (
         <div className="w-full max-w-4xl mt-8 mx-auto sm:mx-0">
@@ -97,7 +64,9 @@ export default function SearchBox() {
                     <label className="block text-xs font-bold text-gray-900 mb-1">
                         Where
                     </label>
-                    <PlaceAutocomplete onPlaceSelect={handlePlaceSelect} />
+                    <div className="autocomplete-control">
+                        <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
+                    </div>
                 </div>
 
                 {/* Type Field */}
@@ -113,7 +82,6 @@ export default function SearchBox() {
                                 simTypeId: e.target.value,
                             })
                         }
-                        onKeyPress={handleKeyPress}
                         className="w-full text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
                     >
                         <option value="">All Types</option>
@@ -133,7 +101,6 @@ export default function SearchBox() {
                         onChange={(e) =>
                             setFormData({ ...formData, date: e.target.value })
                         }
-                        onKeyPress={handleKeyPress}
                         min={new Date().toISOString().split("T")[0]}
                         className="w-full text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer [color-scheme:light]"
                         placeholder="Add dates"
@@ -156,7 +123,6 @@ export default function SearchBox() {
                     <label className="block text-xs font-bold text-gray-900 mb-2">
                         Where
                     </label>
-                    <PlaceAutocomplete onPlaceSelect={handlePlaceSelect} />
 
                 </div>
 

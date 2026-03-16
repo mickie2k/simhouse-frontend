@@ -20,11 +20,19 @@ const BookingTime = ({
 	id,
 	bookList,
 	schedule,
+	startTime,
+	setStartTime,
+	endTime,
+	setEndTime,
 }: {
 	addList: (id: number) => void;
 	id: number;
 	bookList: number[];
 	schedule: Schedule;
+	startTime?: string;
+	setStartTime?: React.Dispatch<React.SetStateAction<string>>;
+	endTime?: string;
+	setEndTime?: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const { date, setDate } = useContext(DateContext);
 	const [isSelected, setIsSelected] = useState(false);
@@ -42,6 +50,13 @@ const BookingTime = ({
 		if (date === "" || (date !== schedule.date && bookList.length === 0)) {
 			setDate(schedule.date);
 		}
+		if (startTime && setStartTime && schedule.startTime <= startTime) {
+			setStartTime(schedule.startTime);
+		}
+		if (endTime && setEndTime && schedule.endTime >= endTime) {
+			setEndTime(schedule.endTime);
+		}
+
 		addList(id);
 	}
 

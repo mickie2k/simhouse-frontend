@@ -7,19 +7,30 @@ import ProductDetailLeft from "./ProductDetailLeft";
 import ProductDetailRight from "./ProductDetailRight";
 import ModalReserve from "./modalReserve/modalReserve";
 import Modal from "react-modal";
+import ProductReview from "./ProductReview";
 export interface DateContextType {
 	date: string;
 	setDate: React.Dispatch<React.SetStateAction<string>>;
+	startTime: string;
+	setStartTime: React.Dispatch<React.SetStateAction<string>>;
+	endTime: string;
+	setEndTime: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const DateContext = createContext<DateContextType>({
 	date: "",
 	setDate: () => { },
+	startTime: "",
+	setStartTime: () => { },
+	endTime: "",
+	setEndTime: () => { },
 });
 export default function ProductDetail({ product }: { product: Product }) {
 	const [modal, setModal] = useState(false);
 	const [bookList, setBookList] = useState<number[]>([]);
 	const [date, setDate] = useState<string>("");
+	const [startTime, setStartTime] = useState<string>("");
+	const [endTime, setEndTime] = useState<string>("");
 
 	useEffect(() => {
 		Modal.setAppElement("body");
@@ -60,7 +71,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 	}
 
 	return (
-		<DateContext.Provider value={{ date, setDate }}>
+		<DateContext.Provider value={{ date, setDate, startTime, setStartTime, endTime, setEndTime }}>
 			<div className="max-w-6xl mx-auto mt-6" id="productDetail">
 				<Modal
 					isOpen={modal}
@@ -129,13 +140,17 @@ export default function ProductDetail({ product }: { product: Product }) {
 						className="h-full w-full object-cover col-span-1 row-span-1"
 					/>
 				</div>
-				<div className="py-8 flex justify-between h-full relative">
+				<div className="py-8 flex col-span-1 justify-between h-full relative">
 					<ProductDetailLeft product={product} />
 					<ProductDetailRight
 						product={product}
 						setModal={setModal}
 						bookList={bookList}
 					/>
+
+				</div>
+				<div className="w-full">
+					<ProductReview />
 				</div>
 			</div>
 		</DateContext.Provider>

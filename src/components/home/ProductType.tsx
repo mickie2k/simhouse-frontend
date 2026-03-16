@@ -26,9 +26,9 @@ export default function ProductType() {
 					href="/page/1/gt"
 					className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95"
 				>
-					<Image src={GTseat} width={700} alt="f1seat" className="w-96" />
+					<Image src={GTseat} width={700} alt="gtseat" className="w-96" />
 					<div className="flex-col flex mt-2 items-center">
-						<Image src={GTlogo} width={155} alt="f1logo" className="w-36" />
+						<Image src={GTlogo} width={155} alt="gtlogo" className="w-36" />
 						<h3 className="text-neutral-200 text-2xl font-extralight mt-4 text-center">
 							GT RACING
 						</h3>
