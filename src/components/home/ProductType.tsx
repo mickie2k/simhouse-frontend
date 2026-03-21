@@ -11,7 +11,7 @@ export default function ProductType() {
 			<h2 className="text-3xl font-bold mb-6">Discover your racing type</h2>
 			<div className="grid grid-cols-2  gap-6">
 				<Link
-					href="/page/1/formula"
+					href="/page/1?simTypeId=1"
 					className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95"
 				>
 					<Image src={f1seat} width={700} alt="f1seat" className="w-96" />
@@ -23,7 +23,7 @@ export default function ProductType() {
 					</div>
 				</Link>
 				<Link
-					href="/page/1/gt"
+					href="/page/1?simTypeIds=2"
 					className="w-full h-96 bg-gradient-to-t from-black to-[#242424] flex flex-col items-center justify-end pb-6 rounded-3xl cursor-pointer hover:opacity-95"
 				>
 					<Image src={GTseat} width={700} alt="gtseat" className="w-96" />

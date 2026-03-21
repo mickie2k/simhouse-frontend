@@ -1,8 +1,8 @@
 "use client";
 
-import { Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { Product } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mapStyle } from "@/lib/simhouse-map-style";
 import Image from "next/image";
 import Link from "next/link";
@@ -52,6 +52,7 @@ export default function ProductsMap({
             className="h-full w-full border-0"
             onClick={() => setSelectedProduct(null)}
         >
+            <MapPanner center={center} />
             {products.map((product) => {
                 const isHovered = hoveredProductId === product.id;
                 const isSelected = selectedProduct === product.id;
@@ -132,4 +133,14 @@ export default function ProductsMap({
             })}
         </Map>
     );
+}
+
+function MapPanner({ center }: { center: google.maps.LatLngLiteral }) {
+    const map = useMap();
+    useEffect(() => {
+        if (map) {
+            map.panTo(center);
+        }
+    }, [center.lat, center.lng]);
+    return null;
 }

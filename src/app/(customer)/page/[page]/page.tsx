@@ -28,8 +28,14 @@ export default async function Page({ params, searchParams }: PageProps) {
 	// Add search filters if present
 	if (!search.useSpecific) {
 
-		if (search.cityId) {
-			queryParams.set("cityId", search.cityId.toString());
+		if (search.city) {
+			queryParams.set("city", search.city.toString());
+		}
+		if (search.province) {
+			queryParams.set("province", search.province.toString());
+		}
+		if (search.country) {
+			queryParams.set("country", search.country.toString());
 		}
 		if (search.simTypeIds) {
 			queryParams.set("simTypeIds", search.simTypeIds.toString());
@@ -47,6 +53,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 			}
 		);
 
+
 	} else {
 		if (search.lat) {
 			queryParams.set("lat", search.lat.toString());
@@ -63,13 +70,14 @@ export default async function Page({ params, searchParams }: PageProps) {
 				next: { revalidate: 1 }, // Revalidate every 5 minutes
 			}
 		);
-		console.log(res)
+
 	}
 
 	if (!res.ok) {
 		throw new Error("Failed to fetch products");
 	}
 	const payload: PaginatedResponse<ProductApiResponse> = await res.json();
+	console.log("Fetched products payload:", payload);
 	const { data, meta }: PaginatedResponse<Product> = normalizePaginatedProducts(payload);
 
 
@@ -86,7 +94,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
 	return (
 		<main className="w-full">
-			<ProductListWithMap products={data} title={title} page={meta.page} totalPages={meta.totalPages || 15} lat={centerLat} lng={centerLng} />
+			<ProductListWithMap products={data} title={title} page={meta.page} totalPages={meta.totalPages || 1} lat={centerLat} lng={centerLng} />
 		</main>
 	);
 }

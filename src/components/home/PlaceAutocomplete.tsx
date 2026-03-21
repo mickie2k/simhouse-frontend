@@ -8,16 +8,27 @@ import type { SelectedPlace } from "@/types";
 interface PlaceAutocompleteProps {
 	onPlaceSelect: (place: SelectedPlace | null) => void;
 	placeholder?: string;
+	initialValue?: string;
 }
 
 export default function PlaceAutocomplete({
 	onPlaceSelect,
 	placeholder = "Search destinations",
+	initialValue = "",
 }: PlaceAutocompleteProps) {
 	const places = useMapsLibrary("places");
-	const [inputValue, setInputValue] = useState("");
+	const [inputValue, setInputValue] = useState(initialValue);
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
+
+	// Sync if initialValue changes (e.g. navigating to different search)
+	const prevInitialValue = useRef(initialValue);
+	useEffect(() => {
+		if (initialValue !== prevInitialValue.current) {
+			setInputValue(initialValue);
+			prevInitialValue.current = initialValue;
+		}
+	}, [initialValue]);
 
 	const { suggestions, resetSession } = useAutocompleteSuggestions(inputValue);
 
@@ -75,7 +86,7 @@ export default function PlaceAutocomplete({
 			setInputValue(suggestion.placePrediction.text.text);
 			setIsOpen(false);
 			resetSession();
-			onPlaceSelect({ name, lat, lng, address });
+			onPlaceSelect({ name: name + ", " + address, lat, lng, address });
 		},
 		[places, onPlaceSelect, resetSession]
 	);
@@ -116,7 +127,7 @@ export default function PlaceAutocomplete({
 			)}
 
 			{isOpen && suggestions.length > 0 && (
-				<ul className="absolute left-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2">
+				<ul className="absolute left-0 top-full mt-6 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2">
 					{suggestions.map((suggestion, index) => {
 						const prediction = suggestion.placePrediction;
 						if (!prediction) return null;
