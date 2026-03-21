@@ -25,7 +25,7 @@ export default function ReviewOverallComponent({
         return (
             <div key={item.label} className="flex items-center gap-4 text-sm">
                 <span className="w-24 text-slate-800">{item.label}</span>
-                <div className="h-[2px] w-full bg-slate-200">
+                <div className="h-[2px] w-full bg-slate-200 flex-1">
                     <div
                         className="h-[2px] bg-slate-900"
                         style={{ width: `${widthPercent}%` }}

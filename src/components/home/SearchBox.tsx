@@ -1,30 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import PlaceAutocomplete from "./PlaceAutocomplete";
-
+import type { SelectedPlace } from "@/types";
 
 type SearchFormData = {
-    location: string | null;
+    selectedPlace: SelectedPlace | null;
     simTypeId: string;
     date: string;
 };
 
-export default function SearchBox() {
+interface SearchBoxProps {
+    compact?: boolean;
+}
+
+export default function SearchBox({ compact = false }: SearchBoxProps) {
     const router = useRouter();
     const [formData, setFormData] = useState<SearchFormData>({
-        location: null,
+        selectedPlace: null,
         simTypeId: "",
         date: "",
     });
-    const [selectedPlace, setSelectedPlace] =
-        useState<google.maps.places.PlaceResult | null>(null);
 
-    useEffect(() => {
-        console.log("Selected place:", selectedPlace);
-    }, [selectedPlace]);
+
+    const splitAddressToArray = (name: string) => {
+        return name.split(",").map((part) => part.trim()) || [];
+    }
 
 
 
@@ -33,14 +36,23 @@ export default function SearchBox() {
         const params = new URLSearchParams();
 
         // Handle location data
-        if (formData.location) {
-            params.set("location", formData.location);
-        }
+        if (formData.selectedPlace) {
+            console.log("Selected place:", formData.selectedPlace);
+            if (formData.selectedPlace.address) {
+                const arr = splitAddressToArray(formData.selectedPlace.address);
+                const length = arr.length;
+                if (arr && length > 3) {
+                    params.set("useSpecific", "true");
+                }
+                arr[length - 1] ? params.set("country", arr[length - 1]) : null;
+                arr[length - 2] ? params.set("province", arr[length - 2]) : null;
+                arr[length - 3] ? params.set("city", arr[length - 3]) : null;
 
-        if (formData.simTypeId) {
-            params.set("simTypeIds", formData.simTypeId);
+            }
+            params.set("lat", formData.selectedPlace.lat.toString());
+            params.set("lng", formData.selectedPlace.lng.toString());
+            params.set("locationName", formData.selectedPlace.name);
         }
-
 
         if (formData.simTypeId) {
             params.set("simTypeIds", formData.simTypeId);
@@ -56,31 +68,34 @@ export default function SearchBox() {
 
 
 
+    const fieldPadding = compact ? "px-4 py-2" : "px-6 py-4";
+
     return (
-        <div className="w-full max-w-4xl mt-8 mx-auto sm:mx-0">
-            <div className="hidden bg-white rounded-full shadow-xl border border-gray-200 md:flex items-center overflow-hidden hover:shadow-2xl transition-shadow">
+        <div className={compact ? "w-full" : "w-full max-w-4xl mt-8 mx-auto sm:mx-0"}>
+            <div className="hidden bg-white rounded-full shadow-xl border border-gray-200 md:flex items-center hover:shadow-2xl transition-shadow">
                 {/* Where (Location) Field */}
-                <div className="flex-1 px-6 py-4 border-r border-gray-200 min-w-0">
-                    <label className="block text-xs font-bold text-gray-900 mb-1">
-                        Where
-                    </label>
+                <div className={`flex-1 ${fieldPadding} border-r border-gray-200 min-w-0`}>
+                    {!compact && (
+                        <label className="block text-xs font-bold text-gray-900 mb-1">Where</label>
+                    )}
                     <div className="autocomplete-control">
-                        <PlaceAutocomplete onPlaceSelect={setSelectedPlace} />
+                        <PlaceAutocomplete
+                            onPlaceSelect={(place) =>
+                                setFormData((prev) => ({ ...prev, selectedPlace: place }))
+                            }
+                        />
                     </div>
                 </div>
 
                 {/* Type Field */}
-                <div className="flex-1 px-6 py-4 border-r border-gray-200 min-w-0">
-                    <label className="block text-xs font-bold text-gray-900 mb-1">
-                        Type
-                    </label>
+                <div className={`flex-1 ${fieldPadding} border-r border-gray-200 min-w-0`}>
+                    {!compact && (
+                        <label className="block text-xs font-bold text-gray-900 mb-1">Type</label>
+                    )}
                     <select
                         value={formData.simTypeId}
                         onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                simTypeId: e.target.value,
-                            })
+                            setFormData({ ...formData, simTypeId: e.target.value })
                         }
                         className="w-full text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0 cursor-pointer"
                     >
@@ -91,10 +106,10 @@ export default function SearchBox() {
                 </div>
 
                 {/* Date Field */}
-                <div className="flex-1 px-6 py-4 min-w-0">
-                    <label className="block text-xs font-bold text-gray-900 mb-1">
-                        Date
-                    </label>
+                <div className={`flex-1 ${fieldPadding} min-w-0`}>
+                    {!compact && (
+                        <label className="block text-xs font-bold text-gray-900 mb-1">Date</label>
+                    )}
                     <input
                         type="date"
                         value={formData.date}
@@ -107,13 +122,13 @@ export default function SearchBox() {
                     />
                 </div>
 
-                {/* Search Button - Airbnb style */}
+                {/* Search Button */}
                 <button
                     onClick={handleSearch}
-                    className="m-2  bg-primary1 hover:bg-primary1_hover  text-white rounded-full p-4 transition-all "
+                    className={`${compact ? "m-1 p-3" : "m-2 p-4"} bg-primary1 hover:bg-primary1_hover text-white rounded-full transition-all`}
                     aria-label="Search"
                 >
-                    <Search size={20} />
+                    <Search size={compact ? 16 : 20} />
                 </button>
             </div>
 
@@ -123,7 +138,11 @@ export default function SearchBox() {
                     <label className="block text-xs font-bold text-gray-900 mb-2">
                         Where
                     </label>
-
+                    <PlaceAutocomplete
+                        onPlaceSelect={(place) =>
+                            setFormData((prev) => ({ ...prev, selectedPlace: place }))
+                        }
+                    />
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">

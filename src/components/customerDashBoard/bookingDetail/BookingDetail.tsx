@@ -7,6 +7,7 @@ import Image from "next/image";
 import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import CancelBookingButton from "./CancelBookingButton";
+import ReviewForm from "./ReviewForm";
 import { normalizeImagePath } from "@/lib/products";
 
 export default function BookingDetailBody({
@@ -196,8 +197,12 @@ export default function BookingDetailBody({
 										Find a New Reservation
 									</div>
 								</Link>
-							</>
-						) : (
+							</>) : booking.statusId === 2 ? (
+								<Link href={`/product/${simulator.id}`}>
+									<div className="w-full text-white bg-primary1 hover:bg-primary1_hover font-medium rounded-lg text-base px-5 py-3.5 text-center">
+										Book Again
+									</div>
+								</Link>) : (
 							<>
 								<small className="w-full text-xs text-neutral-400 font-extralight">
 									{booking.statusId === 1
@@ -220,6 +225,15 @@ export default function BookingDetailBody({
 						)}
 					</div>
 				</div>
+				{booking.statusId === 2 && (
+					<>
+						<hr className="col-span-3" />
+						<ReviewForm
+							bookingId={booking.id}
+							alreadyReviewed={!!booking.review}
+						/>
+					</>
+				)}
 				<hr className="col-span-3" />
 				<div className="w-full col-span-3">
 					<h1 className="text-[22px] font-medium mb-6">Where you'll play</h1>

@@ -11,13 +11,17 @@ interface ProductListWithMapProps {
     title?: string;
     page?: number;
     totalPages?: number;
+    lat?: number;
+    lng?: number;
 }
 
 export default function ProductListWithMap({
     products,
     title = "All Simulators",
     page,
-    totalPages
+    totalPages,
+    lat,
+    lng,
 }: ProductListWithMapProps) {
     const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
 
@@ -57,6 +61,8 @@ export default function ProductListWithMap({
                         products={products}
                         hoveredProductId={hoveredProductId}
                         onMarkerHover={setHoveredProductId}
+                        lat={lat}
+                        lng={lng}
                     />
                 </div>
             </div>

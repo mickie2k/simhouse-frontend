@@ -1,3 +1,10 @@
+export type SelectedPlace = {
+    name: string;
+    address?: string;
+    lat: number;
+    lng: number;
+};
+
 // Simulator (Product) — matches GET /simulator/:id (with mod+brand+host included)
 export type SimulatorMod = {
     id: number;
@@ -27,6 +34,7 @@ export type Product = {
     city: string;
     province?: string;
     country: string;
+    distanenceKm?: number;
     // Included relations (present when fetched via findOne with includes)
     mod?: SimulatorMod;
     host?: {
@@ -86,6 +94,24 @@ export type BookingListItem = {
     };
 };
 
+export type BookingReview = {
+    id: number;
+    overallRating: number;
+    comment: string;
+};
+
+export type ReviewDetail = {
+    typeId: number;
+    rating: number;
+};
+
+export type ReviewSubmissionPayload = {
+    bookingId: number;
+    overallRating: number;
+    comment: string;
+    reviewDetails: ReviewDetail[];
+};
+
 export type BookingDetail = {
     id: number;
     bookingDate: string;
@@ -95,6 +121,7 @@ export type BookingDetail = {
     simId: number;
     bookingList: BookingListItem[];
     simulator: Product;
+    review?: BookingReview | null;
 };
 
 // Paginated response wrapper — matches GET /simulator (list)
@@ -116,6 +143,22 @@ export interface User {
     lastName: string;
     email: string;
 }
+
+export type ProductReviewResponse = {
+    simulatorId: number;
+    totalReviews: number;
+    averageRating: number;
+    ratingCategories: {
+        label: string;
+        value: number;
+    }[];
+    reviewItems: {
+        id: number;
+        reviewerName: string;
+        reviewDate: string;
+        comment: string;
+    }[];
+};
 export interface Customer extends User {}
 export interface Host extends User {}
 export interface Admin extends User {}
