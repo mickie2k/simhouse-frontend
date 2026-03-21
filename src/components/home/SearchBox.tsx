@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, ChevronDown, Calendar, Flag, Car, List } from "lucide-react";
+import { Search, ChevronDown, Calendar, Flag, Car, List, ChevronLeft, ChevronRight } from "lucide-react";
 import PlaceAutocomplete from "./PlaceAutocomplete";
+import { CalendarCell, toLocalDateStr, isSameDay } from "@/components/ui/CalendarCell";
 import type { SelectedPlace } from "@/types";
 
 type SearchFormData = {
@@ -15,6 +16,12 @@ type SearchFormData = {
 interface SearchBoxProps {
     compact?: boolean;
 }
+
+const MONTH_NAMES = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+];
+const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export default function SearchBox({ compact = false }: SearchBoxProps) {
     const router = useRouter();
@@ -40,6 +47,11 @@ export default function SearchBox({ compact = false }: SearchBoxProps) {
     const typeRef = useRef<HTMLDivElement>(null);
     const dateRef = useRef<HTMLDivElement>(null);
 
+    // Calendar state
+    const today = new Date();
+    const [calYear, setCalYear] = useState(today.getFullYear());
+    const [calMonth, setCalMonth] = useState(today.getMonth()); // 0-indexed
+
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
             if (typeRef.current && !typeRef.current.contains(e.target as Node)) {
@@ -52,6 +64,34 @@ export default function SearchBox({ compact = false }: SearchBoxProps) {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    // Calendar helpers
+    const prevMonth = () => {
+        if (calMonth === 0) {
+            setCalYear((y) => y - 1);
+            setCalMonth(11);
+        } else {
+            setCalMonth((m) => m - 1);
+        }
+    };
+
+    const nextMonth = () => {
+        if (calMonth === 11) {
+            setCalYear((y) => y + 1);
+            setCalMonth(0);
+        } else {
+            setCalMonth((m) => m + 1);
+        }
+    };
+
+    // Generate calendar cells
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const calCells: (number | null)[] = [
+        ...Array(firstDay).fill(null),
+        ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    ];
+    while (calCells.length % 7 !== 0) calCells.push(null);
 
     const typeOptions = [
         { value: "", label: "All Types", icon: <List size={18} className="text-gray-600" /> },
@@ -175,25 +215,69 @@ export default function SearchBox({ compact = false }: SearchBoxProps) {
                         )}
                         <div className="flex items-center justify-between">
                             <span className={`text-sm ${formData.date ? "text-gray-700" : "text-gray-400"}`}>
-                                {formData.date || "Add dates"}
+                                {formData.date ? new Date(formData.date).toLocaleDateString("en-US", {
+                                    year: "numeric" as const,
+                                    month: "short" as const, // 'short' gives you the abbreviated month name
+                                    day: "numeric" as const,
+                                }) : "Add dates"}
                             </span>
-                            <Calendar size={14} className="text-gray-400 ml-2 flex-shrink-0" />
                         </div>
                     </div>
                     {isDateOpen && (
-                        <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-4 min-w-[220px]">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Pick a date</p>
-                            <input
-                                type="date"
-                                value={formData.date}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, date: e.target.value });
-                                    setIsDateOpen(false);
-                                }}
-                                min={new Date().toISOString().split("T")[0]}
-                                className="w-full text-sm text-gray-700 border border-gray-200 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-primary1 [color-scheme:light]"
-                                autoFocus
-                            />
+                        <div className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 p-4 w-80">
+                            {/* Month Navigation */}
+                            <div className="flex items-center justify-between mb-4">
+                                <button
+                                    onClick={prevMonth}
+                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                                    aria-label="Previous month"
+                                >
+                                    <ChevronLeft size={16} className="text-gray-600" />
+                                </button>
+                                <span className="text-sm font-semibold text-black2">
+                                    {MONTH_NAMES[calMonth]} {calYear}
+                                </span>
+                                <button
+                                    onClick={nextMonth}
+                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                                    aria-label="Next month"
+                                >
+                                    <ChevronRight size={16} className="text-gray-600" />
+                                </button>
+                            </div>
+
+                            {/* Day Headers */}
+                            <div className="grid grid-cols-7 mb-2">
+                                {DAY_LABELS.map((d) => (
+                                    <div key={d} className="text-center text-xs font-medium text-gray-500 py-2">
+                                        {d}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Calendar Grid */}
+                            <div className="grid grid-cols-7 gap-1">
+                                {calCells.map((day, idx) => {
+                                    const isPast = day !== null && new Date(calYear, calMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                                    return (
+                                        <CalendarCell
+                                            key={day === null ? `empty-${idx}` : toLocalDateStr(new Date(calYear, calMonth, day))}
+                                            day={day}
+                                            idx={idx}
+                                            year={calYear}
+                                            month={calMonth}
+                                            selectedDate={formData.date}
+                                            today={today}
+                                            size="md"
+                                            disabled={isPast}
+                                            onSelectDate={(dateStr) => {
+                                                setFormData({ ...formData, date: dateStr });
+                                                setIsDateOpen(false);
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -249,18 +333,62 @@ export default function SearchBox({ compact = false }: SearchBoxProps) {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                    <label className="block text-xs font-bold text-gray-900 mb-2">
+                    <label className="block text-xs font-bold text-gray-900 mb-3">
                         Date
                     </label>
-                    <input
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) =>
-                            setFormData({ ...formData, date: e.target.value })
-                        }
-                        min={new Date().toISOString().split("T")[0]}
-                        className="w-full text-sm text-gray-700 bg-transparent border-none outline-none focus:ring-0 [color-scheme:light]"
-                    />
+
+                    {/* Month Navigation */}
+                    <div className="flex items-center justify-between mb-3">
+                        <button
+                            onClick={prevMonth}
+                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Previous month"
+                        >
+                            <ChevronLeft size={16} className="text-gray-600" />
+                        </button>
+                        <span className="text-sm font-semibold text-black2">
+                            {MONTH_NAMES[calMonth]} {calYear}
+                        </span>
+                        <button
+                            onClick={nextMonth}
+                            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Next month"
+                        >
+                            <ChevronRight size={16} className="text-gray-600" />
+                        </button>
+                    </div>
+
+                    {/* Day Headers */}
+                    <div className="grid grid-cols-7 mb-2">
+                        {DAY_LABELS.map((d) => (
+                            <div key={d} className="text-center text-xs font-medium text-gray-500 py-2">
+                                {d}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-1">
+                        {calCells.map((day, idx) => {
+                            const isPast = day !== null && new Date(calYear, calMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                            return (
+                                <CalendarCell
+                                    key={day === null ? `empty-${idx}` : toLocalDateStr(new Date(calYear, calMonth, day))}
+                                    day={day}
+                                    idx={idx}
+                                    year={calYear}
+                                    month={calMonth}
+                                    selectedDate={formData.date}
+                                    today={today}
+                                    size="sm"
+                                    disabled={isPast}
+                                    onSelectDate={(dateStr) => {
+                                        setFormData({ ...formData, date: dateStr });
+                                    }}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
 
                 <button

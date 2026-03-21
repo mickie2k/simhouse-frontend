@@ -127,7 +127,7 @@ export default function PlaceAutocomplete({
 			)}
 
 			{isOpen && suggestions.length > 0 && (
-				<ul className="absolute left-0 top-full mt-6 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2">
+				<ul className="absolute left-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2">
 					{suggestions.map((suggestion, index) => {
 						const prediction = suggestion.placePrediction;
 						if (!prediction) return null;

@@ -35,8 +35,8 @@ export default function ProductDetail({ product, reviews }: ProductDetailProps) 
 	const [modal, setModal] = useState(false);
 	const [bookList, setBookList] = useState<number[]>([]);
 	const [date, setDate] = useState<string>("");
-	const [startTime, setStartTime] = useState<string>("");
-	const [endTime, setEndTime] = useState<string>("");
+	const [startTime, setStartTime] = useState<string>("Add Time");
+	const [endTime, setEndTime] = useState<string>("Add Time");
 
 	useEffect(() => {
 		Modal.setAppElement("body");

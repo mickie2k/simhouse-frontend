@@ -11,7 +11,6 @@ import { axiosJWTInstance } from "@/lib/http";
 import { useRouter } from "next/navigation";
 import LoadingComponent from "../loading/LoadingComponent";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
-import { start } from "repl";
 
 export default function ProductDetailRight({
 	product,

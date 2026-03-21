@@ -4,6 +4,7 @@ import ProductCard from "@/components/product/ProductCard";
 import PaginationSection from "@/components/pagination/PaginationSection";
 import { normalizePaginatedProducts, ProductApiResponse } from "@/lib/products";
 import ProductListWithMap from "@/components/map/ProductListWithMap";
+import { start } from "node:repl";
 
 export const metadata: Metadata = {
 	title: "Browse Simulators",
@@ -24,6 +25,12 @@ export default async function Page({ params, searchParams }: PageProps) {
 	const queryParams = new URLSearchParams();
 	queryParams.set("limit", "30");
 	queryParams.set("page", page.toString());
+	if (search.simTypeIds) {
+		queryParams.set("simTypeIds", search.simTypeIds.toString());
+	}
+	if (search.startDate) {
+		queryParams.set("startDate", search.startDate.toString());
+	}
 
 	// Add search filters if present
 	if (!search.useSpecific) {
@@ -36,12 +43,6 @@ export default async function Page({ params, searchParams }: PageProps) {
 		}
 		if (search.country) {
 			queryParams.set("country", search.country.toString());
-		}
-		if (search.simTypeIds) {
-			queryParams.set("simTypeIds", search.simTypeIds.toString());
-		}
-		if (search.startDate) {
-			queryParams.set("startDate", search.startDate.toString());
 		}
 		if (search.search) {
 			queryParams.set("search", search.search.toString());
