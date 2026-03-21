@@ -45,30 +45,26 @@ export default function Navbar() {
                 onMouseEnter={toggleMenu}
                 onMouseLeave={disableMenu}
             >
-                <div className="flex gap-2 py-3">
-                    <FaUserCircle /> <span className="text-sm">{user?.username}</span>
+                {/* ปุ่ม Profile */}
+                <div className="flex items-center gap-2 py-3 hover:text-orange-600 transition">
+                    <FaUserCircle className="text-xl" /> 
+                    <span className="text-sm font-medium">{user?.username || "Host"}</span>
                 </div>
 
+                {/* Dropdown Menu */}
                 <div
                     id="dropdown"
-                    className={`z-10 absolute  bg-white divide-y divide-gray-100 rounded-lg shadow-[0px_6px_16px_rgba(0,0,0,0.1)] w-48 right-0 ${!isMenu && "hidden"
-                        }`}
+                    className={`z-50 absolute bg-white divide-y divide-gray-100 rounded-lg shadow-lg w-48 right-0 ${!isMenu && "hidden"}`}
                 >
-                    <ul
-                        className="py-2 text-sm text-gray-700 flex flex-col gap-2 "
-                        aria-labelledby="dropdownDefaultButton"
-                    >
-                        <li className="w-full">
-                            <Link href="/dashboard" className="  ">
-                                <div className="px-4 py-2 hover:bg-gray-100  text-sm ">
-                                    Your Bookings
-                                </div>
+                    <ul className="py-2 text-sm text-gray-700 flex flex-col" aria-labelledby="dropdownDefaultButton">
+                        <li>
+                            <Link href="/dashboard" className="block px-4 py-2 hover:bg-gray-100 transition">
+                                Your Bookings
                             </Link>
                         </li>
-
-                        <li className="w-full">
+                        <li>
                             <button
-                                className="px-4 py-2 hover:bg-gray-100 w-full text-start text-sm"
+                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition"
                                 onClick={logout}
                             >
                                 Sign out
@@ -83,21 +79,48 @@ export default function Navbar() {
     return (
         <header
             className={
-                (scroll ? "navbar-scroll" : "navbar-noscroll") +
-                " flex items-center justify-between px-20 py-5 h-20 sticky top-0 z-10 w-full transition-all ease-in-out duration-300"
+                (scroll ? "navbar-scroll bg-white shadow-sm" : "navbar-noscroll bg-white border-b border-gray-100") +
+                " flex items-center justify-between px-6 md:px-20 py-0 h-20 sticky top-0 z-40 w-full transition-all ease-in-out duration-300 text-gray-800"
             }
         >
-            <Link href="/">
-                <h3>SIMHOUSE</h3>
+            {/* โลโก้ด้านซ้าย */}
+            <Link href="/" className="flex-shrink-0">
+                <h3 className="text-xl font-bold tracking-widest text-gray-700 hover:text-black transition">SIMHOUSE</h3>
             </Link>
-            <div className="flex justify-between items-center gap-7">
-                <Link href="/" className="text-sm">
-                    Become a Host
+           
+            <nav className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
+                <Link 
+                    href="/" 
+                    className={`text-sm font-semibold transition hover:text-black ${pathname === '/' ? 'text-black' : 'text-gray-500'}`}
+                >
+                    Home
                 </Link>
+                <Link 
+                    href="/bookings" 
+                    className={`text-sm font-semibold transition hover:text-black ${pathname === '/bookings' ? 'text-black' : 'text-gray-500'}`}
+                >
+                    Calendar
+                </Link>
+                <Link 
+                    href="/simulators" 
+                    className={`text-sm font-semibold transition hover:text-black ${pathname === '/simulators' ? 'text-black' : 'text-gray-500'}`}
+                >
+                    Simulators
+                </Link>
+            </nav>
+
+            {/* เมนูด้านขวา */}
+            <div className="flex justify-end items-center gap-6 flex-shrink-0">
+                {!isAuthenticated && (
+                    <Link href="/" className="text-sm font-medium hover:text-orange-600 transition hidden sm:block">
+                        Become a Host
+                    </Link>
+                )}
+                
                 {isAuthenticated ? (
                     loginComponent()
                 ) : (
-                    <Link href="/login" className="text-sm py-3 cursor-pointer">
+                    <Link href="/login" className="text-sm font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full transition">
                         Login
                     </Link>
                 )}

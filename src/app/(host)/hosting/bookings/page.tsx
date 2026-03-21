@@ -1,0 +1,158 @@
+'use client'
+
+import React from 'react';
+import Link from 'next/link';
+
+// จำลองข้อมูลสำหรับการจอง 
+const mockBookings = [
+  { id: 1, customer: 'Alex Johnson', sim: 'Moza R5', schedule: 'Oct 24, 10:00 AM', duration: '2 hrs', price: '$120.00', status: 'Pending', avatar: 'https://i.pravatar.cc/150?u=1' },
+  { id: 2, customer: 'Sarah Williams', sim: 'Moza R5', schedule: 'Oct 24, 01:30 PM', duration: '1 hr', price: '$65.00', status: 'Confirmed', avatar: 'https://i.pravatar.cc/150?u=2' },
+  { id: 3, customer: 'Michael Chen', sim: 'Fanatec GT3', schedule: 'Oct 25, 09:00 AM', duration: '3 hrs', price: '$180.00', status: 'Pending', avatar: 'https://i.pravatar.cc/150?u=3' },
+  { id: 4, customer: 'Emily Davis', sim: 'Fanatec GT3', schedule: 'Oct 25, 04:00 PM', duration: '2 hrs', price: '$130.00', status: 'Completed', avatar: 'https://i.pravatar.cc/150?u=4' },
+  { id: 5, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
+  { id: 6, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
+  { id: 7, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
+];
+
+export default function BookingsManagementPage() {
+  
+  // กำหนดสีของ Badge สถานะ
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Pending':
+        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
+      case 'Confirmed':
+        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Confirmed</span>;
+      case 'Completed':
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Completed</span>;
+      case 'Canceled':
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Canceled</span>;
+      default:
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{status}</span>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">   
+        
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        {/*  สถิติด้านบน  */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-gray-500 font-medium mb-2">Pending Requests</p>
+            <div className="flex items-end gap-2">
+              <span className="text-4xl font-bold">12</span>
+              <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded mb-1">+4 new</span>
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-gray-500 font-medium mb-2">Today's Bookings</p>
+            <span className="text-4xl font-bold">8</span>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-gray-500 font-medium mb-2">Monthly Revenue</p>
+            <span className="text-4xl font-bold">$4,280</span>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-gray-500 font-medium mb-2">Rating</p>
+            <div className="flex items-center gap-1">
+              <span className="text-4xl font-bold">4.9</span>
+              <svg className="w-6 h-6 text-yellow-400 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+            </div>
+          </div>
+        </div>
+
+        {/* ตารางแสดงการจอง */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          
+          {/* แถบเครื่องมือบนตาราง */}
+          <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h2 className="text-xl font-bold text-gray-900">Bookings Management</h2>
+            <div className="flex flex-wrap gap-3">
+              <select className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block px-4 py-2">
+                <option>All Status</option>
+                <option>Pending</option>
+                <option>Confirmed</option>
+              </select>
+              <select className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block px-4 py-2">
+                <option>Last 30 Days</option>
+                <option>Last 7 Days</option>
+              </select>
+              <button className="bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          {/* ตาราง */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4">Simulator</th>
+                  <th className="px-6 py-4">Schedule</th>
+                  <th className="px-6 py-4">Duration</th>
+                  <th className="px-6 py-4">Price</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white text-sm">
+                {mockBookings.map((booking) => (
+                  <tr key={booking.id} className="hover:bg-gray-50 transition">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <img src={booking.avatar} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                        <span className="font-semibold text-gray-900">{booking.customer}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.sim}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.schedule}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.duration}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{booking.price}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(booking.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-2">
+                      {booking.status === 'Pending' ? (
+                        <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-md transition text-xs font-semibold">
+                          Confirm
+                        </button>
+                      ) : (
+                        <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
+                          Details
+                        </button>
+                      )}
+                      <button className="text-gray-400 hover:text-gray-600 ml-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* แบ่งหน้า (ของเก๊อยู่)*/}
+          <div className="p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+            <div>Showing 1-10 of 148 results</div>
+            <div className="flex gap-1">
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&lt;</button>
+              <button className="px-3 py-1 bg-orange-600 text-white rounded font-medium">1</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">2</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">3</button>
+              <span className="px-2 py-1">...</span>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">15</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&gt;</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+    </div>
+  );
+}
