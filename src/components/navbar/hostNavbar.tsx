@@ -96,13 +96,13 @@ export default function Navbar() {
                     Home
                 </Link>
                 <Link 
-                    href="/bookings" 
+                    href="hosting/bookings" 
                     className={`text-sm font-semibold transition hover:text-black ${pathname === '/bookings' ? 'text-black' : 'text-gray-500'}`}
                 >
-                    Calendar
+                    Bookings
                 </Link>
                 <Link 
-                    href="/simulators" 
+                    href="/simulatorshosting" 
                     className={`text-sm font-semibold transition hover:text-black ${pathname === '/simulators' ? 'text-black' : 'text-gray-500'}`}
                 >
                     Simulators

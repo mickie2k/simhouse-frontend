@@ -76,39 +76,43 @@ export default function MySimulatorsPage() {
                             <p className="text-gray-400 text-sm text-center px-6 mt-2">List a new simulator to earn more.</p>
                         </div>
 
-                        {simulators.map((sim, index) => (
-                            <Link 
-                                href={`hosting/simulator/${sim.SimID || sim.id}`} 
-                                key={sim.SimID || index} 
-                                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-[320px] cursor-pointer"
-                            >
-                                <div className="h-44 bg-gray-200 relative flex justify-center items-center text-gray-400 text-sm overflow-hidden">
-                                    {sim.firstimage || sim.firstImage ? (
-                                        <img src={sim.firstimage || sim.firstImage} alt={sim.SimListName || sim.simListName} className="w-full h-full object-cover" />
-                                    ) : (
-                                        "[ ภาพ Simulator ]"
-                                    )}
-                                </div>
-                                <div className="p-5 flex flex-col flex-grow justify-between">
-                                    <div>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
-                                                {sim.SimListName || sim.simListName || 'No Name'}
-                                            </h3>
-                                            <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                                                <FaStar className="text-yellow-400" /> {sim.AverageRating || sim.rating || "5.0"}
-                                            </div>
-                                        </div>                                        
-                                        <p className="text-gray-500 text-sm line-clamp-2">
-                                            {sim.ListDescription || sim.listDescription || sim.ListDescripion || sim.description || 'ไม่มีคำอธิบาย'}
-                                        </p>
+                        {simulators.map((sim, index) => {                           
+                            const simId = sim.SimID || sim.simid || sim.simId || sim.id;
+
+                            return (
+                                <Link 
+                                    href={`/hosting/simulator/${simId}/edit`} 
+                                    key={simId || index} 
+                                    className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-[320px] cursor-pointer"
+                                >
+                                    <div className="h-44 bg-gray-200 relative flex justify-center items-center text-gray-400 text-sm overflow-hidden">
+                                        {sim.firstimage || sim.firstImage ? (
+                                            <img src={sim.firstimage || sim.firstImage} alt={sim.SimListName || sim.simListName} className="w-full h-full object-cover" />
+                                        ) : (
+                                            "[ ภาพ Simulator ]"
+                                        )}
                                     </div>
-                                    <div className="mt-4 font-bold text-lg text-gray-900">
-                                        ฿{sim.PricePerHour || sim.pricePerHour || 0} <span className="text-sm font-normal text-gray-500">/hr</span>
+                                    <div className="p-5 flex flex-col flex-grow justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
+                                                    {sim.SimListName || sim.simListName || 'No Name'}
+                                                </h3>
+                                                <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
+                                                    <FaStar className="text-yellow-400" /> {sim.AverageRating || sim.rating || "5.0"}
+                                                </div>
+                                            </div>                                        
+                                            <p className="text-gray-500 text-sm line-clamp-2">
+                                                {sim.ListDescription || sim.listDescription || sim.ListDescripion || sim.description || 'ไม่มีคำอธิบาย'}
+                                            </p>
+                                        </div>
+                                        <div className="mt-4 font-bold text-lg text-gray-900">
+                                            ฿{sim.PricePerHour || sim.pricePerHour || sim.priceperhour || 0} <span className="text-sm font-normal text-gray-500">/hr</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
             </main>
