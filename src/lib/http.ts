@@ -1,6 +1,7 @@
 import axios, {
     AxiosError,
     AxiosInstance,
+    CreateAxiosDefaults,
     AxiosRequestConfig,
     AxiosResponse,
     InternalAxiosRequestConfig,
@@ -8,26 +9,77 @@ import axios, {
 
 const API_HOST = process.env.NEXT_PUBLIC_API_URL;
 
-// Track if a token refresh is in progress
-let isRefreshing = false;
-// Queue of requests waiting for token refresh
-let failedRequestsQueue: Array<{
-    resolve: (token: string) => void;
-    reject: (error: Error) => void;
-}> = [];
+type AuthScope = "customer" | "host";
+
+type AuthRouteConfig = {
+    refreshEndpoint: string;
+    loginRedirect: string;
+};
+
+type RefreshState = {
+    isRefreshing: boolean;
+    failedRequestsQueue: Array<{
+        resolve: () => void;
+        reject: (error: Error) => void;
+    }>;
+};
+
+const AUTH_ROUTES: Record<AuthScope, AuthRouteConfig> = {
+    customer: {
+        refreshEndpoint: "/auth/customer/refresh",
+        loginRedirect: "/customer/login",
+    },
+    host: {
+        refreshEndpoint: "/auth/host/refresh",
+        loginRedirect: "/host/login",
+    },
+};
+
+const refreshStateByScope: Record<AuthScope, RefreshState> = {
+    customer: { isRefreshing: false, failedRequestsQueue: [] },
+    host: { isRefreshing: false, failedRequestsQueue: [] },
+};
+
+function getApiUrl(path: string) {
+    const base = API_HOST ?? "";
+    const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return `${normalizedBase}${normalizedPath}`;
+}
+
+function resolveAuthScopeFromPath(): AuthScope {
+    if (typeof window === "undefined") return "customer";
+    const path = window.location.pathname.toLowerCase();
+    if (path.startsWith("/hosting")) {
+        return "host";
+    }
+    return "customer";
+}
+
+function getBaseAxiosConfig(): CreateAxiosDefaults {
+    return {
+        baseURL: API_HOST,
+        timeout: 10000,
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json",
+        },
+    };
+}
 
 /**
  * Process queued requests after successful token refresh
  */
-const processQueue = (error: Error | null) => {
-    failedRequestsQueue.forEach((promise) => {
+const processQueue = (scope: AuthScope, error: Error | null) => {
+    const state = refreshStateByScope[scope];
+    state.failedRequestsQueue.forEach((promise) => {
         if (error) {
             promise.reject(error);
         } else {
-            promise.resolve("");
+            promise.resolve();
         }
     });
-    failedRequestsQueue = [];
+    state.failedRequestsQueue = [];
 };
 
 /**
@@ -35,12 +87,7 @@ const processQueue = (error: Error | null) => {
  * Uses HTTP-only cookies for secure token storage
  */
 const axiosJWTInstance: AxiosInstance = axios.create({
-    baseURL: API_HOST,
-    timeout: 10000, // 10 seconds timeout
-    withCredentials: true, // Send cookies with requests
-    headers: {
-        "Content-Type": "application/json",
-    },
+    ...getBaseAxiosConfig(),
 });
 
 /**
@@ -104,13 +151,17 @@ axiosJWTInstance.interceptors.response.use(
             originalRequest &&
             !originalRequest._retry
         ) {
+            const authScope = resolveAuthScopeFromPath();
+            const authRoute = AUTH_ROUTES[authScope];
+            const refreshState = refreshStateByScope[authScope];
+
             // Check if this request should skip auth redirect
             const skipRedirect = originalRequest.skipAuthRedirect === true;
 
-            if (isRefreshing) {
+            if (refreshState.isRefreshing) {
                 // If refresh is already in progress, queue this request
                 return new Promise((resolve, reject) => {
-                    failedRequestsQueue.push({
+                    refreshState.failedRequestsQueue.push({
                         resolve: () => {
                             resolve(axiosJWTInstance(originalRequest));
                         },
@@ -122,25 +173,25 @@ axiosJWTInstance.interceptors.response.use(
             }
 
             originalRequest._retry = true;
-            isRefreshing = true;
+            refreshState.isRefreshing = true;
 
             try {
                 // Attempt to refresh the token
-                await axios.get(`${API_HOST}auth/customer/refresh`, {
+                await axios.get(getApiUrl(authRoute.refreshEndpoint), {
                     withCredentials: true,
                     timeout: 5000,
                 });
 
                 // Token refresh successful - process queued requests
-                processQueue(null);
-                isRefreshing = false;
+                processQueue(authScope, null);
+                refreshState.isRefreshing = false;
 
                 // Retry the original request
                 return axiosJWTInstance(originalRequest);
             } catch (refreshError) {
                 // Token refresh failed
-                processQueue(new Error("Token refresh failed"));
-                isRefreshing = false;
+                processQueue(authScope, new Error("Token refresh failed"));
+                refreshState.isRefreshing = false;
 
                 console.error("[Token Refresh Failed]", refreshError);
 
@@ -151,7 +202,7 @@ axiosJWTInstance.interceptors.response.use(
                     sessionStorage.clear();
 
                     // Redirect to login page
-                    window.location.href = "/login";
+                    window.location.href = authRoute.loginRedirect;
                 }
 
                 return Promise.reject(refreshError);
@@ -199,12 +250,7 @@ axiosJWTInstance.interceptors.response.use(
  * Use for public endpoints (login, register, etc.)
  */
 const axiosInstance: AxiosInstance = axios.create({
-    baseURL: API_HOST,
-    timeout: 10000,
-    withCredentials: true,
-    headers: {
-        "Content-Type": "application/json",
-    },
+    ...getBaseAxiosConfig(),
 });
 
 /**

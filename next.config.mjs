@@ -14,6 +14,10 @@ const nextConfig = {
 				protocol: "https",
 				hostname: "simhouse-backend-production.up.railway.app",
 			},
+			{
+				protocol: "https",
+				hostname: "dbqqhdaknxqdo.cloudfront.net",
+			}
 		],
 	},
 };

@@ -4,6 +4,7 @@ import { Schedule } from "@/types";
 import { axiosInstance } from "@/lib/http";
 import { DateContext } from "../ProductDetail";
 import BookingTime from "./bookingTime";
+import { CalendarCell, toLocalDateStr, isSameDay } from "@/components/ui/CalendarCell";
 
 // ─── Calendar helpers ─────────────────────────────────────────────────────────
 
@@ -12,22 +13,6 @@ const MONTH_NAMES = [
 	"July", "August", "September", "October", "November", "December",
 ];
 const DAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-function isSameDay(a: Date, b: Date) {
-	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate()
-	);
-}
-
-function toLocalDateStr(d: Date) {
-	// Returns "YYYY-MM-DD" in local time
-	const y = d.getFullYear();
-	const m = String(d.getMonth() + 1).padStart(2, "0");
-	const day = String(d.getDate()).padStart(2, "0");
-	return `${y}-${m}-${day}`;
-}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -232,33 +217,28 @@ export default function BookingSchedule({
 				{/* Calendar cells */}
 				<div className="grid grid-cols-7 gap-y-1">
 					{calCells.map((day, idx) => {
-						if (day === null) {
-							return <div key={`empty-${idx}`} />;
-						}
-						const cellDate = new Date(calYear, calMonth, day);
-						const key = toLocalDateStr(cellDate);
-						const hasSlots = availableDates.has(key);
-						const isToday = isSameDay(cellDate, today);
-						const isSelected = selectedDate === key;
-						const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+						const cellDate = new Date(calYear, calMonth, day ?? 1);
+						const key = day !== null ? toLocalDateStr(cellDate) : `empty-${idx}`;
+						const hasSlots = day !== null && availableDates.has(key);
+						const isPast = day !== null && cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+						const disabled = day === null || !hasSlots || isPast;
 
 						return (
 							<div key={key} className="flex flex-col items-center">
-								<button
-									onClick={() => handleDayClick(day)}
-									disabled={!hasSlots || isPast}
-									className={[
-										"w-9 h-9 rounded-full text-sm font-medium transition-colors",
-										isSelected
-											? "bg-primary1 text-white"
-											: hasSlots && !isPast
-												? "hover:bg-orange-50 text-black2 cursor-pointer"
-												: "text-gray-300 cursor-default",
-										isToday && !isSelected ? "ring-1 ring-primary1 text-primary1" : "",
-									].join(" ")}
-								>
-									{day}
-								</button>
+								<CalendarCell
+									day={day}
+									idx={idx}
+									year={calYear}
+									month={calMonth}
+									selectedDate={selectedDate}
+									today={today}
+									size="md"
+									disabled={disabled}
+									hasSlots={hasSlots}
+									onSelectDate={() => {
+										if (day !== null) handleDayClick(day);
+									}}
+								/>
 							</div>
 						);
 					})}

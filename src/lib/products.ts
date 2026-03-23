@@ -20,6 +20,7 @@ export type ProductApiResponse = {
     city: string;
     province?: string;
     country: string;
+    distanenceKm?: number;
 };
 
 function toNumber(value: number | string) {

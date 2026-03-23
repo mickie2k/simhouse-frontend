@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import SearchBox from "@/components/home/SearchBox";
 
 export default function Navbar() {
 	const pathname = usePathname();
@@ -80,6 +81,8 @@ export default function Navbar() {
 		);
 	}
 
+	const isBrowsePage = pathname.startsWith("/page/");
+
 	return (
 		<header
 			className={
@@ -88,9 +91,17 @@ export default function Navbar() {
 			}
 		>
 			<Link href="/">
-				<h3>SIMHOUSE</h3>
+				<h3 className={isBrowsePage ? "shrink-0" : ""}>SIMHOUSE</h3>
 			</Link>
-			<div className="flex justify-between items-center gap-7">
+
+			{/* Center: compact search box on browse pages */}
+			{isBrowsePage && (
+				<div className="flex-1 mx-8 max-w-2xl">
+					<SearchBox compact />
+				</div>
+			)}
+
+			<div className="flex justify-between items-center gap-7 shrink-0">
 				<Link href="/" className="text-sm">
 					Become a Host
 				</Link>

@@ -1,5 +1,6 @@
 import Navbar from "@/components/navbar/navbar";
 import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
+import GoogleMapsProvider from "@/components/providers/GoogleMapsProvider";
 
 export default function CustomerLayout({
 	children,
@@ -8,10 +9,12 @@ export default function CustomerLayout({
 }>) {
 	return (
 		<CustomerAuthProvider>
-			<div id="_next">
-				<Navbar />
-				{children}
-			</div>
+			<GoogleMapsProvider>
+				<div id="_next">
+					<Navbar />
+					{children}
+				</div>
+			</GoogleMapsProvider>
 		</CustomerAuthProvider>
 	);
 }

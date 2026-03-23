@@ -8,6 +8,7 @@ import ProductDetailRight from "./ProductDetailRight";
 import ModalReserve from "./modalReserve/modalReserve";
 import Modal from "react-modal";
 import ProductReview from "./ProductReview";
+import { ProductReviewResponse } from "@/types";
 export interface DateContextType {
 	date: string;
 	setDate: React.Dispatch<React.SetStateAction<string>>;
@@ -25,12 +26,17 @@ export const DateContext = createContext<DateContextType>({
 	endTime: "",
 	setEndTime: () => { },
 });
-export default function ProductDetail({ product }: { product: Product }) {
+type ProductDetailProps = {
+	product: Product;
+	reviews: ProductReviewResponse;
+};
+
+export default function ProductDetail({ product, reviews }: ProductDetailProps) {
 	const [modal, setModal] = useState(false);
 	const [bookList, setBookList] = useState<number[]>([]);
 	const [date, setDate] = useState<string>("");
-	const [startTime, setStartTime] = useState<string>("");
-	const [endTime, setEndTime] = useState<string>("");
+	const [startTime, setStartTime] = useState<string>("Add Time");
+	const [endTime, setEndTime] = useState<string>("Add Time");
 
 	useEffect(() => {
 		Modal.setAppElement("body");
@@ -150,7 +156,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
 				</div>
 				<div className="w-full">
-					<ProductReview />
+					<ProductReview reviewsData={reviews} />
 				</div>
 			</div>
 		</DateContext.Provider>

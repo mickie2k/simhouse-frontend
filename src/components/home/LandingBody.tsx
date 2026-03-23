@@ -1,6 +1,5 @@
 import AllProduct from "./AllProduct";
 import ProductType from "./ProductType";
-import TestSearch from "./TestSearch";
 // import Trending from "./Trending";
 
 export default function LandingBody() {
@@ -10,8 +9,8 @@ export default function LandingBody() {
 			<hr />
 			<ProductType />
 			<hr />
-			<TestSearch />
-			<hr />
+			{/* <TestSearch />
+			<hr /> */}
 			{/* <Trending /> */}
 		</div>
 	);

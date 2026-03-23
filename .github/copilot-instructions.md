@@ -17,7 +17,7 @@ Instructions for high-quality Next.js applications with Tailwind CSS styling and
 
 ## Best Practices
 
-- using skills next-best-practices to follows industry standards and conventions
+- Using the `next-best-practices` skill to ensure all code follows Next.js and industry best practices.
 
 ### Architecture
 

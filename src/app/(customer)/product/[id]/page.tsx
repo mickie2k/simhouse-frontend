@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 				description: product.listDescription,
 			};
 		}
+
 	} catch (error) {
 		// Fallback metadata if fetch fails
 	}
@@ -43,11 +44,24 @@ export default async function ProductPage({ params }: Props) {
 		throw new Error("Failed to fetch product");
 	}
 
+	const resReview = await fetch(
+		`${process.env.NEXT_PUBLIC_API_URL}simulator/${id}/review`,
+		{
+			next: { revalidate: 600 }, // Revalidate every 10 minutes
+		}
+	);
+	if (!resReview.ok) {
+		throw new Error("Failed to fetch reviews");
+	}
+
+
 	const product: Product = normalizeProduct(await res.json());
+	const reviews = await resReview.json();
+
 
 	return (
 		<>
-			<ProductDetail product={product} />
+			<ProductDetail product={product} reviews={reviews} />
 		</>
 	);
 }
