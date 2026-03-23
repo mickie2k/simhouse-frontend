@@ -1,31 +1,101 @@
 'use client'
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-// จำลองข้อมูลสำหรับการจอง 
-const mockBookings = [
-  { id: 1, customer: 'Alex Johnson', sim: 'Moza R5', schedule: 'Oct 24, 10:00 AM', duration: '2 hrs', price: '$120.00', status: 'Pending', avatar: 'https://i.pravatar.cc/150?u=1' },
-  { id: 2, customer: 'Sarah Williams', sim: 'Moza R5', schedule: 'Oct 24, 01:30 PM', duration: '1 hr', price: '$65.00', status: 'Confirmed', avatar: 'https://i.pravatar.cc/150?u=2' },
-  { id: 3, customer: 'Michael Chen', sim: 'Fanatec GT3', schedule: 'Oct 25, 09:00 AM', duration: '3 hrs', price: '$180.00', status: 'Pending', avatar: 'https://i.pravatar.cc/150?u=3' },
-  { id: 4, customer: 'Emily Davis', sim: 'Fanatec GT3', schedule: 'Oct 25, 04:00 PM', duration: '2 hrs', price: '$130.00', status: 'Completed', avatar: 'https://i.pravatar.cc/150?u=4' },
-  { id: 5, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
-  { id: 6, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
-  { id: 7, customer: 'David Miller', sim: 'Fanatec GT3', schedule: 'Oct 26, 11:00 AM', duration: '1.5 hrs', price: '$105.00', status: 'Canceled', avatar: 'https://i.pravatar.cc/150?u=5' },
-];
+interface BookingTableData {
+  id: number;
+  customer: string;
+  sim: string;
+  schedule: string;
+  duration: string;
+  price: number;
+  status: string;
+  avatar: string;
+}
 
 export default function BookingsManagementPage() {
+  const router = useRouter();
   
-  // กำหนดสีของ Badge สถานะ
+  const [bookings, setBookings] = useState<BookingTableData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRealBookings = async () => {
+      try {
+        setIsLoading(true);
+
+        
+        const fetchOptions: RequestInit = {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        };
+
+        
+        const profileRes = await fetch('http://localhost:3000/host/profile', fetchOptions)
+        if (!profileRes.ok) throw new Error('Failed to fetch host profile');
+        const profileData = await profileRes.json();
+
+        const hostSimulators = profileData.simulatorlist || []; 
+
+        if (hostSimulators.length === 0) {
+          setBookings([]); 
+          setIsLoading(false);
+          return;
+        }
+
+      
+        const bookingPromises = hostSimulators.map(async (sim: any) => {
+          const res = await fetch(`http://localhost:3000/api/host/booking/${sim.SimID}`, fetchOptions);
+          if (!res.ok) {
+            console.warn(`Failed to fetch bookings for SimID: ${sim.SimID}`);
+            return []; 
+          }
+          return res.json();
+        });
+
+        const resultsArray = await Promise.all(bookingPromises);
+        const allRawBookings = resultsArray.flat();
+
+        const formattedData: BookingTableData[] = allRawBookings.map((raw: any) => ({
+          id: raw.BookingID,
+          customer: `${raw.customer?.FName || 'Unknown'} ${raw.customer?.LName || ''}`,
+          sim: raw.simulatorlist?.SimListName || 'Unknown Sim',
+          schedule: new Date(raw.BookingDate).toLocaleDateString('en-US', { 
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+          }),
+          duration: raw.duration ? `${raw.duration} hrs` : 'N/A', 
+          price: raw.TotalPrice || 0,
+          status: raw.bookingstatus?.StatusName || 'Pending',
+          avatar: raw.customer?.ProfileImageUrl || 'https://via.placeholder.com/150'
+        }));
+
+        formattedData.sort((a, b) => new Date(b.schedule).getTime() - new Date(a.schedule).getTime());
+        setBookings(formattedData);
+
+      } catch (error) {
+        console.error('Error fetching real bookings:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRealBookings();
+  }, []);
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Pending':
+    switch (status.toLowerCase()) {
+      case 'pending':
         return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
-      case 'Confirmed':
+      case 'confirmed':
         return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Confirmed</span>;
-      case 'Completed':
+      case 'completed':
         return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Completed</span>;
-      case 'Canceled':
+      case 'canceled':
+      case 'cancelled':
         return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Canceled</span>;
       default:
         return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{status}</span>;
@@ -34,11 +104,9 @@ export default function BookingsManagementPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-20">   
-        
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         
-        {/*  สถิติด้านบน  */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <p className="text-sm text-gray-500 font-medium mb-2">Pending Requests</p>
             <div className="flex items-end gap-2">
@@ -52,7 +120,7 @@ export default function BookingsManagementPage() {
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <p className="text-sm text-gray-500 font-medium mb-2">Monthly Revenue</p>
-            <span className="text-4xl font-bold">$4,280</span>
+            <span className="text-4xl font-bold">฿4,280</span>
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <p className="text-sm text-gray-500 font-medium mb-2">Rating</p>
@@ -63,10 +131,10 @@ export default function BookingsManagementPage() {
           </div>
         </div>
 
-        {/* ตารางแสดงการจอง */}
+      
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           
-          {/* แถบเครื่องมือบนตาราง */}
+       
           <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-bold text-gray-900">Bookings Management</h2>
             <div className="flex flex-wrap gap-3">
@@ -86,7 +154,7 @@ export default function BookingsManagementPage() {
             </div>
           </div>
 
-          {/* ตาราง */}
+        
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -101,58 +169,82 @@ export default function BookingsManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white text-sm">
-                {mockBookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <img src={booking.avatar} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
-                        <span className="font-semibold text-gray-900">{booking.customer}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.sim}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.schedule}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.duration}</td>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{booking.price}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(booking.status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-2">
-                      {booking.status === 'Pending' ? (
-                        <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-md transition text-xs font-semibold">
-                          Confirm
-                        </button>
-                      ) : (
-                        <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
-                          Details
-                        </button>
-                      )}
-                      <button className="text-gray-400 hover:text-gray-600 ml-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                      </button>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 flex flex-col items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                      กำลังโหลดข้อมูล...
                     </td>
                   </tr>
-                ))}
+                ) : bookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
+                      ไม่พบข้อมูลการจอง
+                    </td>
+                  </tr>
+                ) : (
+                  bookings.map((booking) => (
+                    <tr 
+                      key={booking.id} 
+                      onClick={() => router.push(`/hosting/simulator/${booking.id}`)}
+                      className="hover:bg-gray-100 transition cursor-pointer"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <img src={booking.avatar} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                          <span className="font-semibold text-gray-900">{booking.customer}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.sim}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.schedule}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.duration}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">฿{booking.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(booking.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-2">
+                        {booking.status.toLowerCase() === 'pending' ? (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              
+                              console.log('Confirming booking:', booking.id);
+                            }}
+                            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-md transition text-xs font-semibold"
+                          >
+                            Confirm
+                          </button>
+                        ) : (
+                          <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
+                            Details
+                          </button>
+                        )}
+                        <button 
+                          onClick={(e) => e.stopPropagation()} 
+                          className="text-gray-400 hover:text-gray-600 ml-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* แบ่งหน้า (ของเก๊อยู่)*/}
+      
           <div className="p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
-            <div>Showing 1-10 of 148 results</div>
+            <div>Showing results</div>
             <div className="flex gap-1">
               <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&lt;</button>
               <button className="px-3 py-1 bg-orange-600 text-white rounded font-medium">1</button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">2</button>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">3</button>
-              <span className="px-2 py-1">...</span>
-              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">15</button>
               <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&gt;</button>
             </div>
           </div>
 
         </div>
       </main>
-
     </div>
   );
 }
