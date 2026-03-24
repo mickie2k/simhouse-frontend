@@ -6,6 +6,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { toast } from "sonner";
 import { DateContext } from "./ProductDetail";
 import { axiosJWTInstance } from "@/lib/http";
 import { useRouter } from "next/navigation";
@@ -50,7 +51,7 @@ export default function ProductDetailRight({
 		}
 
 		if (!isAuthenticated) {
-			alert("Please login first");
+			toast.message("Please login first");
 			router.push("/login");
 			isLoading(false);
 			return;
@@ -71,14 +72,14 @@ export default function ProductDetailRight({
 			if (data.message && data.bookingId) {
 				router.push(`/dashboard/booking/${data.bookingId}?justbook=1`);
 			} else {
-				alert("Booking failed");
+				toast.error("Booking failed");
 			}
 		} catch (error: any) {
 			isLoading(false);
 			if (error.response?.status === 400) {
-				alert(error.response.data.message || "Booking failed");
+				toast.error(error.response.data.message || "Booking failed");
 			} else {
-				alert("Booking failed");
+				toast.error("Booking failed");
 			}
 		}
 	}

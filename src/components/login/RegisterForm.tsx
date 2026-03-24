@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { axiosInstance } from "@/lib/http";
 
 export default function RegisterForm(
@@ -25,10 +26,10 @@ export default function RegisterForm(
 
 		try {
 			await axiosInstance.post(registerEndpoint, formDataJson);
-			alert("Register success");
+			toast.success("Register success");
 			router.push(redirectURI);
 		} catch (error) {
-			alert("This username have already been taken");
+			toast.error("This username have already been taken");
 		}
 	};
 	return (

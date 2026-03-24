@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FaStar } from 'react-icons/fa';
-import AddSimulatorModal from '@/components/AddSimulatorModal'; 
+import { axiosJWTInstance } from '@/lib/http';
+import AddSimulatorModal from '@/components/AddSimulatorModal';
 
 export default function MySimulatorsPage() {
     const [simulators, setSimulators] = useState<any[]>([]);
@@ -11,32 +12,12 @@ export default function MySimulatorsPage() {
     const [showToast, setShowToast] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
     const fetchSimulators = async () => {
         setIsLoading(true);
         try {
-            const cleanBaseUrl = API_BASE_URL.replace(/\/$/, '');
-            const token = localStorage.getItem('host_token') || localStorage.getItem('token'); 
-
-            const response = await fetch(`${cleanBaseUrl}/simulator`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                }
-            });
-
-            if (!response.ok) {
-                console.error("API Error Response:", await response.text());
-                throw new Error(`Error: ${response.status} ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            
+            const { data } = await axiosJWTInstance.get('/simulator');
             const fetchedSimulators = Array.isArray(data) ? data : data.data || [];
             setSimulators(fetchedSimulators);
-
         } catch (error) {
             console.error('Failed to fetch simulators:', error);
             setSimulators([]);
@@ -63,11 +44,11 @@ export default function MySimulatorsPage() {
                 {isLoading ? (
                     <div className="flex justify-center items-center h-[320px]">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-                        <span className="ml-4 text-gray-500 font-medium">กำลังโหลดข้อมูล...</span>
+                        <span className="ml-4 text-gray-500 font-medium">Loading data...</span>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div 
+                        <div
                             onClick={() => setIsModalOpen(true)}
                             className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col justify-center items-center h-[320px] hover:bg-gray-100 hover:border-gray-400 transition cursor-pointer bg-white group"
                         >
@@ -76,38 +57,38 @@ export default function MySimulatorsPage() {
                             <p className="text-gray-400 text-sm text-center px-6 mt-2">List a new simulator to earn more.</p>
                         </div>
 
-                        {simulators.map((sim, index) => {                           
-                            const simId = sim.SimID || sim.simid || sim.simId || sim.id;
+                        {simulators.map((sim, index) => {
+                            const simId = sim.id;
 
                             return (
-                                <Link 
-                                    href={`/hosting/simulator/${simId}/edit`} 
-                                    key={simId || index} 
+                                <Link
+                                    href={`/hosting/simulator/${simId}/edit`}
+                                    key={simId || index}
                                     className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-[320px] cursor-pointer"
                                 >
                                     <div className="h-44 bg-gray-200 relative flex justify-center items-center text-gray-400 text-sm overflow-hidden">
-                                        {sim.firstimage || sim.firstImage ? (
-                                            <img src={sim.firstimage || sim.firstImage} alt={sim.SimListName || sim.simListName} className="w-full h-full object-cover" />
+                                        {sim.firstImage ? (
+                                            <img src={sim.firstImage} alt={sim.simListName} className="w-full h-full object-cover" />
                                         ) : (
-                                            "[ ภาพ Simulator ]"
+                                            "[ Simulator Image ]"
                                         )}
                                     </div>
                                     <div className="p-5 flex flex-col flex-grow justify-between">
                                         <div>
                                             <div className="flex justify-between items-start mb-1">
                                                 <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
-                                                    {sim.SimListName || sim.simListName || 'No Name'}
+                                                    {sim.simListName || 'No Name'}
                                                 </h3>
                                                 <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                                                    <FaStar className="text-yellow-400" /> {sim.AverageRating || sim.rating || "5.0"}
+                                                    <FaStar className="text-yellow-400" /> {sim.rating || "5.0"}
                                                 </div>
-                                            </div>                                        
+                                            </div>
                                             <p className="text-gray-500 text-sm line-clamp-2">
-                                                {sim.ListDescription || sim.listDescription || sim.ListDescripion || sim.description || 'ไม่มีคำอธิบาย'}
+                                                {sim.listDescription || 'No description'}
                                             </p>
                                         </div>
                                         <div className="mt-4 font-bold text-lg text-gray-900">
-                                            ฿{sim.PricePerHour || sim.pricePerHour || sim.priceperhour || 0} <span className="text-sm font-normal text-gray-500">/hr</span>
+                                            ฿{sim.pricePerHour || 0} <span className="text-sm font-normal text-gray-500">/hr</span>
                                         </div>
                                     </div>
                                 </Link>
@@ -118,14 +99,14 @@ export default function MySimulatorsPage() {
             </main>
 
             {isModalOpen && (
-                <AddSimulatorModal 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
+                <AddSimulatorModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
                     onSuccess={() => {
                         setIsModalOpen(false);
-                        refreshData(); 
+                        refreshData();
                         setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000); 
+                        setTimeout(() => setShowToast(false), 3000);
                     }}
                 />
             )}
@@ -133,7 +114,7 @@ export default function MySimulatorsPage() {
             {showToast && (
                 <div className="fixed bottom-10 right-10 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in-up">
                     <div className="w-6 h-6 bg-green-500 rounded-full flex justify-center items-center text-white text-sm font-bold">✓</div>
-                    <span className="font-medium">เพิ่ม Simulator สำเร็จ!</span>
+                    <span className="font-medium">Simulator added successfully!</span>
                 </div>
             )}
         </div>
