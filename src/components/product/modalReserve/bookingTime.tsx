@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useContext } from "react";
+import { toast } from "sonner";
 import { Schedule } from "@/types";
 import { HiArrowLongRight } from "react-icons/hi2";
 
@@ -44,7 +45,7 @@ const BookingTime = ({
 	function handleClick() {
 		// If selecting a slot on a different date while others are already booked
 		if (date !== "" && date !== schedule.date && bookList.length > 0) {
-			alert("You can only book slots on the same date.");
+			toast.error("You can only book slots on the same date.");
 			return;
 		}
 		if (date === "" || (date !== schedule.date && bookList.length === 0)) {

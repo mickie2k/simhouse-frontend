@@ -47,7 +47,7 @@ export default function Navbar() {
             >
                 {/* ปุ่ม Profile */}
                 <div className="flex items-center gap-2 py-3 hover:text-orange-600 transition">
-                    <FaUserCircle className="text-xl" /> 
+                    <FaUserCircle className="text-xl" />
                     <span className="text-sm font-medium">{user?.username || "Host"}</span>
                 </div>
 
@@ -87,22 +87,22 @@ export default function Navbar() {
             <Link href="/" className="flex-shrink-0">
                 <h3 className="text-xl font-bold tracking-widest text-gray-700 hover:text-black transition">SIMHOUSE</h3>
             </Link>
-           
+
             <nav className="hidden md:flex items-center gap-8 absolute left-1/2 transform -translate-x-1/2">
-                <Link 
-                    href="/" 
+                <Link
+                    href="/"
                     className={`text-sm font-semibold transition hover:text-black ${pathname === '/' ? 'text-black' : 'text-gray-500'}`}
                 >
                     Home
                 </Link>
-                <Link 
-                    href="hosting/bookings" 
+                <Link
+                    href="hosting/bookings"
                     className={`text-sm font-semibold transition hover:text-black ${pathname === '/bookings' ? 'text-black' : 'text-gray-500'}`}
                 >
                     Bookings
                 </Link>
-                <Link 
-                    href="/simulatorshosting" 
+                <Link
+                    href="/simulatorshosting"
                     className={`text-sm font-semibold transition hover:text-black ${pathname === '/simulators' ? 'text-black' : 'text-gray-500'}`}
                 >
                     Simulators
@@ -116,11 +116,11 @@ export default function Navbar() {
                         Become a Host
                     </Link>
                 )}
-                
+
                 {isAuthenticated ? (
                     loginComponent()
                 ) : (
-                    <Link href="/login" className="text-sm font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                    <Link href="/hosting/login" className="text-sm font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full transition">
                         Login
                     </Link>
                 )}
