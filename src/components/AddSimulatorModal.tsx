@@ -40,10 +40,8 @@ export default function AddSimulatorModal({ isOpen, onClose }: AddSimulatorModal
     switch (currentStep) {
       case 1:
         return <Step1GeneralInfo formData={formData} setFormData={setFormData} next={nextStep} onClose={onClose} />;
-        return <div className="p-10 text-center">Form page 1 content</div>;
       case 2:
         return <Step2HardwareSpecs formData={formData} setFormData={setFormData} next={nextStep} back={backStep} />;
-        return <div className="p-10 text-center">Form page 2 content (Hardware)</div>;
       case 3:
         const handleSubmit = () => {
           alert("New simulator created successfully!");
@@ -58,7 +56,7 @@ export default function AddSimulatorModal({ isOpen, onClose }: AddSimulatorModal
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
 
       {/* stopPropagation to prevent closing when clicking inside */}
-      <div className="relative bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="relative bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
 
         <div className="border-b border-gray-200 py-6 px-10">
           <div className="w-full bg-gray-100 rounded-full h-2.5 flex items-center gap-1">

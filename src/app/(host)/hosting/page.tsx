@@ -15,7 +15,7 @@ export default function MySimulatorsPage() {
     const fetchSimulators = async () => {
         setIsLoading(true);
         try {
-            const { data } = await axiosJWTInstance.get('/simulator');
+            const { data } = await axiosJWTInstance.get('/host/simulator');
             const fetchedSimulators = Array.isArray(data) ? data : data.data || [];
             setSimulators(fetchedSimulators);
         } catch (error) {

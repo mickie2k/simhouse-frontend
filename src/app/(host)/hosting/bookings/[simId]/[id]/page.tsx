@@ -7,14 +7,7 @@ import { toast } from 'sonner';
 import { IoIosCheckmarkCircle } from 'react-icons/io';
 import { MdCancel, MdPending } from 'react-icons/md';
 import Image from 'next/image';
-import { FaUserCircle } from 'react-icons/fa';
 import Link from 'next/link';
-
-interface Schedule {
-    date: string;
-    startTime: string;
-    endTime: string;
-}
 
 interface Customer {
     id: number;
@@ -22,14 +15,37 @@ interface Customer {
     email: string;
 }
 
+interface Schedule {
+    id: number;
+    price: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    available: boolean;
+    simId: number;
+    templateId: number;
+}
+
+interface BookingListItem {
+    bookingId: number;
+    scheduleId: number;
+    schedule: Schedule;
+}
+
 interface Simulator {
     id: number;
     simListName: string;
-    pricePerHour: number;
-    firstImage: string;
-    addressDetail: string;
-    latitude: number;
-    longitude: number;
+    pricePerHour?: string;
+    firstImage?: string;
+    secondImage?: string;
+    thirdImage?: string;
+    listDescription?: string;
+    addressDetail?: string;
+    cityId?: number;
+    latitude?: string;
+    longitude?: string;
+    hostId?: number;
+    modId?: number;
 }
 
 interface BookingStatus {
@@ -44,6 +60,7 @@ interface HostBookingDetail {
     statusId: number;
     customerId: number;
     simId: number;
+    bookingList: BookingListItem[];
     bookingStatus: BookingStatus;
     customer: Customer;
     simulator: Simulator;
@@ -52,6 +69,7 @@ interface HostBookingDetail {
 export default function HostBookingDetailPage() {
     const params = useParams();
     const bookingId = params.id as string;
+    const simId = params.simId as string;
 
     const [booking, setBooking] = useState<HostBookingDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -62,16 +80,17 @@ export default function HostBookingDetailPage() {
         const fetchBookingDetail = async () => {
             try {
                 setIsLoading(true);
-                const { data: allBookings } = await axiosJWTInstance.get<HostBookingDetail[]>('/host/booking');
-                const foundBooking = (Array.isArray(allBookings) ? allBookings : allBookings.data || []).find(
-                    (b) => b.id.toString() === bookingId
-                );
 
-                if (!foundBooking) {
+                // If we have both simId and bookingId, use the specific endpoint
+                if (simId) {
+                    const { data } = await axiosJWTInstance.get<HostBookingDetail>(
+                        `/host/booking/${simId}/${bookingId}/schedule`
+                    );
+                    console.log(data)
+                    setBooking(data);
+                } else {
                     toast.error('Booking not found');
                     setBooking(null);
-                } else {
-                    setBooking(foundBooking);
                 }
             } catch (error) {
                 console.error('Failed to fetch booking details:', error);
@@ -84,7 +103,7 @@ export default function HostBookingDetailPage() {
         if (bookingId) {
             fetchBookingDetail();
         }
-    }, [bookingId]);
+    }, [bookingId, simId]);
 
     const handleConfirmBooking = async () => {
         if (!booking) return;
@@ -174,95 +193,115 @@ export default function HostBookingDetailPage() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto my-6">
+        <div className="max-w-6xl mx-auto my-6 px-4">
             <div className="py-2">
                 {getStatusIndicator()}
 
-                <div className="grid grid-cols-3 gap-x-20 gap-y-8 mt-10">
-                    {/* Left Column - Simulator Image and Host Info */}
-                    <div className="flex flex-col gap-6 col-span-2 overflow-hidden">
-                        <Image
-                            src={booking.simulator.firstImage || '/noimage.webp'}
-                            width={500}
-                            height={400}
-                            alt={booking.simulator.simListName}
-                            className="w-full object-cover rounded-2xl"
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                    {/* Left Column - Simulator Image and Info */}
+                    <div className="lg:col-span-2 flex flex-col gap-6">
+                        {/* Product Image */}
+                        {booking.simulator.firstImage && (
+                            <div className="w-full rounded-xl overflow-hidden">
+                                <Image
+                                    src={booking.simulator.firstImage}
+                                    width={600}
+                                    height={450}
+                                    alt={booking.simulator.simListName}
+                                    className="w-full h-auto object-cover"
+                                />
+                            </div>
+                        )}
 
-                        {/* Simulator and Customer Info */}
-                        <div className="flex flex-row justify-start gap-4">
-                            <div className="mr-auto">
-                                <h1 className="text-xl font-medium">{booking.simulator.simListName}</h1>
+                        {/* Product Info */}
+                        <div className="flex flex-col gap-2">
+                            <h2 className="text-2xl font-semibold">{booking.simulator.simListName}</h2>
+                            <p className="text-gray-600 text-sm">Fanatec Brand • Full Cockpit • 3 monitor</p>
+                            {booking.simulator.latitude && booking.simulator.longitude && booking.simulator.addressDetail && (
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${booking.simulator.latitude}%2C${booking.simulator.longitude}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex gap-1 text-blue-600 underline text-sm mt-1"
+                                    className="text-blue-600 underline text-sm mt-2 hover:text-blue-700"
                                 >
-                                    View on Maps →
+                                    {booking.simulator.addressDetail}
                                 </a>
-                            </div>
-                            <div>
-                                <FaUserCircle size={48} />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <h1 className="text-base font-normal flex gap-2 items-start leading-5">
-                                    Customer: {booking.customer.username}
-                                </h1>
-                                <p className="text-sm text-gray-500 font-light">
-                                    Email: {booking.customer.email}
-                                </p>
-                            </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Right Column - Booking Details */}
-                    <div className="flex flex-col gap-6">
-                        {/* Address */}
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-xl font-medium">Address</h1>
-                            <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${booking.simulator.latitude}%2C${booking.simulator.longitude}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-base font-base underline text-blue-600"
-                            >
-                                {booking.simulator.addressDetail}
-                            </a>
+                    <div className="lg:col-span-1 flex flex-col gap-6">
+                        {/* Customer Information */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-lg font-semibold">Customer Information</h3>
+                            <div className="space-y-2">
+                                <p className="text-base font-medium">{booking.customer.username}</p>
+                                <p className="text-sm text-gray-600">Tel: {formattedTel}</p>
+                            </div>
                         </div>
 
-                        <hr />
+                        <hr className="border-gray-200" />
 
                         {/* Date/Time */}
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-xl font-medium">Date/Time</h1>
-                            <div className="flex-row flex justify-between">
-                                <div className="text-base font-light h-full flex flex-col">
-                                    <p>{weekday[day]}</p>
-                                    <p>{dateStr}</p>
-                                    <p className="mt-auto text-xs text-gray-500 pb-1">
-                                        Please ensure simulator is ready 10 minutes before.
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-lg font-semibold">Date/Time</h3>
+                            <div className="flex justify-between gap-6">
+                                <div className="space-y-2">
+                                    <p className="text-sm text-gray-700">{weekday[day]}</p>
+                                    <p className="text-sm text-gray-700">{dateStr}</p>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Please check in at least 10 minutes prior.
                                     </p>
+                                </div>
+
+                                {/* Time Slots */}
+                                <div className="space-y-1 text-right">
+                                    {booking.bookingList && booking.bookingList.length > 0 ? (
+                                        booking.bookingList.map((item, index) => {
+                                            const startTime = new Date(item.schedule.startTime);
+                                            const endTime = new Date(item.schedule.endTime);
+                                            const startStr = startTime.toLocaleTimeString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: false,
+                                            });
+                                            const endStr = endTime.toLocaleTimeString('en-US', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: false,
+                                            });
+                                            return (
+                                                <p key={index} className="text-sm text-gray-700">
+                                                    {startStr}-{endStr}
+                                                </p>
+                                            );
+                                        })
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
 
-                        <hr />
+                        <hr className="border-gray-200" />
 
                         {/* Amount */}
-                        <div className="flex flex-col gap-2">
-                            <h1 className="text-xl font-medium">Amount</h1>
-                            <div className="flex-row flex text-base justify-between">
-                                <ul className="text-left font-light w-1/2">
-                                    <li>${booking.simulator.pricePerHour}/hour</li>
-                                </ul>
-                                <ul className="text-right font-light w-1/2">
-                                    <li>${booking.totalPrice}</li>
-                                </ul>
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-lg font-semibold">Amount</h3>
+                            <div className="flex justify-between items-end gap-6">
+                                {booking.bookingList && booking.bookingList.length > 0 && (
+                                    <div className="text-sm text-gray-600">
+                                        <p>
+                                            ฿{booking.bookingList[0].schedule.price} x {booking.bookingList.length} hrs
+                                        </p>
+                                    </div>
+                                )}
+                                <div>
+                                    <span className="text-2xl font-semibold">฿{booking.totalPrice}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <hr />
+                        <hr className="border-gray-200" />
 
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3">
@@ -278,7 +317,7 @@ export default function HostBookingDetailPage() {
                                     <button
                                         onClick={handleCancelBooking}
                                         disabled={isCanceling}
-                                        className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-gray-900 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed font-medium py-2 px-4 rounded-lg transition text-sm"
+                                        className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-gray-900 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed font-medium py-3 px-4 rounded-lg transition"
                                     >
                                         {isCanceling ? 'Canceling...' : 'Cancel Reservation'}
                                     </button>
@@ -291,7 +330,7 @@ export default function HostBookingDetailPage() {
                                     <button
                                         onClick={handleCancelBooking}
                                         disabled={isCanceling}
-                                        className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-gray-900 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed font-medium py-2 px-4 rounded-lg transition text-sm"
+                                        className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 hover:text-gray-900 disabled:text-gray-400 disabled:border-gray-200 disabled:cursor-not-allowed font-medium py-3 px-4 rounded-lg transition"
                                     >
                                         {isCanceling ? 'Canceling...' : 'Cancel Reservation'}
                                     </button>
@@ -301,15 +340,6 @@ export default function HostBookingDetailPage() {
                                     Canceled
                                 </button>
                             )}
-                        </div>
-
-                        <hr />
-
-                        {/* Back Link */}
-                        <div className="text-center">
-                            <Link href="/hosting/bookings" className="text-orange-600 hover:text-orange-700 text-sm font-medium underline">
-                                ← Back to Bookings
-                            </Link>
                         </div>
                     </div>
                 </div>
