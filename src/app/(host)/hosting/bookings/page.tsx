@@ -35,6 +35,7 @@ interface BookingResponse {
 
 interface BookingTableData {
   id: number;
+  simId: number;
   customer: string;
   sim: string;
   schedule: string;
@@ -67,6 +68,7 @@ export default function BookingsManagementPage() {
 
         const formattedData: BookingTableData[] = (allRawBookings as BookingResponse[]).map((raw) => ({
           id: raw.id,
+          simId: raw.simId,
           customer: raw.customer?.username || 'Unknown',
           sim: raw.simulator?.simListName || 'Unknown Sim',
           schedule: new Date(raw.bookingDate).toLocaleDateString('en-US', {
@@ -193,7 +195,7 @@ export default function BookingsManagementPage() {
                   bookings.map((booking) => (
                     <tr
                       key={booking.id}
-                      onClick={() => router.push(`/hosting/bookings/${booking.id}`)}
+                      onClick={() => router.push(`/hosting/bookings/${booking.simId}/${booking.id}`)}
                       className="hover:bg-gray-100 transition cursor-pointer"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
