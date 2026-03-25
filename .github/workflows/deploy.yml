@@ -1,0 +1,84 @@
+name: Build and Deploy Frontend to ECR and Elastic Beanstalk
+
+on:
+    push:
+        branches: [production]
+    pull_request:
+        branches: [production]
+
+env:
+    AWS_REGION: ap-southeast-1
+    ECR_REPOSITORY: simhouse-frontend
+    EB_ENVIRONMENT: simhouse-frontend-env
+    EB_APPLICATION: simhouse-frontend
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v2
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Build Docker image
+              id: docker-build
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+                  docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+            - name: Push Docker image to ECR
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                  docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+            - name: Generate deployment package
+              if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  IMAGE_TAG: ${{ github.sha }}
+              run: |
+                  cat > Dockerrun.aws.json <<EOF
+                  {
+                    "AWSEBDockerrunVersion": "1",
+                    "Image": {
+                      "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG",
+                      "Update": "true"
+                    },
+                    "Ports": [
+                      {
+                        "ContainerPort": 3000,
+                        "HostPort": 80
+                      }
+                    ]
+                  }
+                  EOF
+
+            - name: Deploy to Elastic Beanstalk
+              if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+              uses: einaregilsson/beanstalk-deploy@v21
+              with:
+                  aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  application_name: simhouse-frontend
+                  environment_name: simhouse-frontend-env
+                  version_label: simhouse-frontend-${{ github.sha }}
+                  region: ap-southeast-1
+                  deployment_package: Dockerrun.aws.json
+                  use_existing_version_if_available: true
