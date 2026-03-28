@@ -10,6 +10,10 @@ const nextConfig = {
 			{
 				protocol: "https",
 				hostname: "dbqqhdaknxqdo.cloudfront.net",
+			},
+			{
+				protocol: "http",
+				hostname: "simhouse-backend-env.eba-cypjwp4e.ap-southeast-1.elasticbeanstalk.com",
 			}
 		],
 	},
