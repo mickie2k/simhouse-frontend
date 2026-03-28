@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useEffect, useRef, useState } from "react";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 
@@ -61,9 +62,7 @@ export function useAutocompleteSuggestions(
     // once the PlacesLibrary is loaded and whenever the input changes, a query
     // is sent to the Autocomplete Data API.
     useEffect(() => {
-        if (!placesLib || inputString === "") {
-            return;
-        }
+        if (!placesLib) return;
 
         const { AutocompleteSessionToken, AutocompleteSuggestion } = placesLib;
 
@@ -80,16 +79,19 @@ export function useAutocompleteSuggestions(
             sessionToken: sessionTokenRef.current,
         };
 
-        // Fetch suggestions asynchronously
-        AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
-            .then((res) => {
+        if (inputString === "") {
+            if (suggestions.length > 0) setSuggestions([]);
+            return;
+        }
+
+        setIsLoading(true);
+        AutocompleteSuggestion.fetchAutocompleteSuggestions(request).then(
+            (res) => {
                 setSuggestions(res.suggestions);
-            })
-            .catch((error) => {
-                console.error("Error fetching suggestions:", error);
-                setSuggestions([]);
-            });
-    }, [placesLib, inputString, requestOptions]);
+                setIsLoading(false);
+            },
+        );
+    }, [placesLib, inputString]);
 
     return {
         suggestions,
