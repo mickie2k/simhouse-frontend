@@ -1,188 +1,656 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
-import { useParams } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { axiosJWTInstance } from '@/lib/http';
+import Link from 'next/link';
 
-export default function SimulatorDetailPage() {
+export default function EditSimulatorPage() {
+  const router = useRouter();
   const params = useParams();
-  const [simulator, setSimulator] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const simulatorId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  // สร้าง State สำหรับจัดการสถานะการจองและการโหลดปุ่ม
-  const [bookingStatus, setBookingStatus] = useState<'pending' | 'completed'>('pending');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeSection, setActiveSection] = useState('general');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [formData, setFormData] = useState({
+    simulatorName: '',
+    description: '',
+    location: '',
+    price: '',
+    modId: '',
+    platformId: '',
+    wheelBaseBrandId: '',
+    wheelBaseModelId: '',
+    pedalBrandId: '',
+    pedalModelId: '',
+    screenSetupId: '',
+  });
+
+  const [options, setOptions] = useState({
+    simulatorBrands: [] as any[],
+    simulatorMods: [] as any[],
+    pedals: [] as any[],
+  });
+
+  const [currentSimulator, setCurrentSimulator] = useState<any>(null);
+  const [uploadingImages, setUploadingImages] = useState<Record<string, boolean>>({});
+  const [imageUrls, setImageUrls] = useState({
+    firstImage: '',
+    secondImage: '',
+    thirdImage: '',
+  });
+  const [imageFiles, setImageFiles] = useState<Record<string, File | null>>({
+    firstImage: null,
+    secondImage: null,
+    thirdImage: null,
+  });
+
+  const firstImageRef = React.useRef<HTMLInputElement>(null);
+  const secondImageRef = React.useRef<HTMLInputElement>(null);
+  const thirdImageRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRefs = {
+    firstImage: firstImageRef,
+    secondImage: secondImageRef,
+    thirdImage: thirdImageRef,
+  };
+
+  const menuItems = useMemo(() => [
+    { id: 'general', label: 'General Info' },
+    { id: 'location', label: 'Location' },
+    { id: 'photos', label: 'Photos' },
+    { id: 'hardware', label: 'Hardware Space' },
+    { id: 'pricing', label: 'Pricing & Availability' },
+  ], []);
 
   useEffect(() => {
-    const fetchSimulatorDetail = async () => {
-      if (!params?.id) return;
-      setIsLoading(true);
+    const fetchSimulatorDetails = async () => {
+      if (!simulatorId || simulatorId === 'undefined') {
+        setIsLoadingData(false);
+        return;
+      }
+
       try {
-        const { data } = await axiosJWTInstance.get('/simulator');
-        const allSimulators = Array.isArray(data) ? data : data.data || [];
-        const found = allSimulators.find((sim: any) => sim.id?.toString() === params.id);
-        setSimulator(found);
+        const { data } = await axiosJWTInstance.get(`/simulator/${simulatorId}`);
+        const sim = data.data || data;
+
+        setCurrentSimulator(sim);
+        setImageUrls({
+          firstImage: sim.firstImage || '',
+          secondImage: sim.secondImage || '',
+          thirdImage: sim.thirdImage || '',
+        });
+
+        setFormData({
+          simulatorName: sim.simListName || '',
+          description: sim.listDescription || '',
+          location: sim.addressDetail || '',
+          price: (sim.pricePerHour || '').toString(),
+          modId: (sim.modId || '').toString(),
+          platformId: (sim.platformId || '').toString(),
+          wheelBaseBrandId: (sim.mod?.brandId || '').toString(),
+          wheelBaseModelId: (sim.modId || '').toString(),
+          pedalBrandId: (sim.pedal?.brandId || '').toString(),
+          pedalModelId: (sim.pedalId || '').toString(),
+          screenSetupId: (sim.screenSetupId || '').toString(),
+        });
       } catch (error) {
-        console.error('Failed to fetch simulator details:', error);
+        console.error("Error loading data:", error);
       } finally {
-        setIsLoading(false);
+        setIsLoadingData(false);
       }
     };
 
-    fetchSimulatorDetail();
-  }, [params]);
+    fetchSimulatorDetails();
 
-  // ฟังก์ชันกดยืนยันการจองและบันทึกลง Database
-  const handleConfirmReservation = async () => {
-    setIsUpdating(true); // ปรับปุ่มเป็นสถานะโหลด
-    try {
-      // จำลองการดีเลย์โหลด API 1 วินาที 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  }, [simulatorId]);
 
-      //  UI สำเร็จเปลี่ยนเป็นสถานะ completed
-      setBookingStatus('completed');
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [brandsRes, modsRes, pedalsRes] = await Promise.all([
+          axiosJWTInstance.get('/simulator/brands/list'),
+          axiosJWTInstance.get('/simulator/models/list'),
+          axiosJWTInstance.get('/simulator/pedals/list'),
+        ]);
+        setOptions({
+          simulatorBrands: brandsRes.data || [],
+          simulatorMods: modsRes.data || [],
+          pedals: pedalsRes.data || [],
+        });
+      } catch (error) {
+        console.error('Error loading options:', error);
+      }
+    };
 
-    } catch (error) {
-      console.error("Error confirming reservation:", error);
-      toast.error("Error confirming reservation. Please try again.");
-    } finally {
-      setIsUpdating(false);
+    fetchOptions();
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    const element = document.getElementById(id);
+    if (element) {
+      const y = element.getBoundingClientRect().top + window.scrollY - 40;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
-  if (isLoading) {
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 100;
+
+      for (const item of [...menuItems].reverse()) {
+        const element = document.getElementById(item.id);
+        if (element && element.offsetTop <= scrollPosition) {
+          setActiveSection(item.id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+
+  }, [menuItems]);
+
+  const handleChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    if (errors[field]) setErrors({ ...errors, [field]: '' });
+  };
+
+
+  const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>, imageType: 'firstImage' | 'secondImage' | 'thirdImage') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Store the file in state instead of uploading immediately
+      setImageFiles({ ...imageFiles, [imageType]: file });
+      // Create a preview URL for the selected file
+      const previewUrl = URL.createObjectURL(file);
+      setImageUrls({ ...imageUrls, [imageType]: previewUrl });
+    }
+  };
+
+  const uploadAllImages = async (): Promise<Record<string, string>> => {
+    const uploadedFileKeys: Record<string, string> = {};
+    const imagesToUpload = Object.entries(imageFiles).filter(([_, file]) => file !== null);
+
+    for (const [imageType, file] of imagesToUpload) {
+      if (!file) continue;
+
+      try {
+        setUploadingImages(prev => ({ ...prev, [imageType]: true }));
+
+        // Validate and get content type
+        const supportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        const contentType = file.type && supportedTypes.includes(file.type)
+          ? file.type
+          : 'image/jpeg';
+
+        console.log(`Uploading ${imageType}:`, { fileName: file.name, fileSize: file.size, contentType });
+
+        // Step 1: Get presigned URL from backend
+        const { data: response } = await axiosJWTInstance.post(
+          `/host/simulator/${simulatorId}/image-upload`,
+          { contentType }
+        );
+
+        // Map backend response fields to what we need
+        const presignedUrl = response.uploadUrl;
+        const fileKey = response.objectKey;
+
+        if (!presignedUrl || !fileKey) {
+          throw new Error('Invalid response: missing uploadUrl or objectKey');
+        }
+
+        console.log(`Got presigned URL for ${imageType}:`, { fileKey, urlLength: presignedUrl.length });
+
+        // Step 2: Upload file to S3 using presigned URL
+        const uploadResponse = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': contentType,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          console.error(`S3 upload failed for ${imageType}:`, uploadResponse.status, errorText);
+          throw new Error(`S3 upload failed with status ${uploadResponse.status}`);
+        }
+
+        console.log(`Successfully uploaded ${imageType} to S3`);
+        uploadedFileKeys[imageType] = fileKey;
+        toast.success(`${imageType} uploaded successfully!`);
+      } catch (error: any) {
+        console.error(`Error uploading ${imageType}:`, error);
+        const errorMessage = error.response?.data?.message || error.message || `Failed to upload ${imageType}`;
+        toast.error(errorMessage);
+        throw error;
+      } finally {
+        setUploadingImages(prev => ({ ...prev, [imageType]: false }));
+      }
+    }
+
+    return uploadedFileKeys;
+  };
+
+  const handleUpdate = async () => {
+    if (!simulatorId || simulatorId === 'undefined') return;
+
+    const safeSimulatorId = String(simulatorId).trim();
+
+    const newErrors: Record<string, string> = {};
+    if (!formData.simulatorName?.trim()) newErrors.simulatorName = 'Please specify simulator name';
+    if (!formData.price || parseFloat(formData.price.toString()) <= 0) newErrors.price = 'Please specify correct price';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Step 1: Upload all selected images to S3
+      const uploadedFileKeys = await uploadAllImages();
+
+      // Step 2: Prepare payload with image file keys
+      const payload: Record<string, any> = {
+        simlistname: formData.simulatorName?.trim(),
+        listdescription: formData.description?.trim() || '',
+        priceperhour: parseFloat(formData.price),
+        addressdetail: formData.location?.trim() || '',
+        modId: formData.wheelBaseModelId ? parseInt(formData.wheelBaseModelId) : null,
+        platformId: formData.platformId ? parseInt(formData.platformId) : null,
+        pedalId: formData.pedalModelId ? parseInt(formData.pedalModelId) : null,
+        screenSetupId: formData.screenSetupId ? parseInt(formData.screenSetupId) : null,
+      };
+
+      // Add uploaded image keys to payload
+      if (uploadedFileKeys.firstImage) payload.firstImageKey = uploadedFileKeys.firstImage;
+      if (uploadedFileKeys.secondImage) payload.secondImageKey = uploadedFileKeys.secondImage;
+      if (uploadedFileKeys.thirdImage) payload.thirdImageKey = uploadedFileKeys.thirdImage;
+
+      // Step 3: Update simulator with all data
+      await axiosJWTInstance.patch(`/host/simulator/${safeSimulatorId}`, payload);
+
+      // Clear uploaded images from state
+      setImageFiles({ firstImage: null, secondImage: null, thirdImage: null });
+
+      toast.success("Update successful! 🎉");
+      router.refresh();
+    } catch (error: any) {
+      console.error("API Error:", error);
+      const errorMessage = error.response?.data?.message || `Unable to save data. Please check Console.`;
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoadingData) {
     return (
-      <div className="min-h-screen flex justify-center items-center gap-3 text-xl font-bold text-gray-700">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        Loading data...
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <span className="text-xl font-semibold text-gray-600">Loading data...</span>
       </div>
     );
   }
-
-  if (!simulator) {
-    return (
-      <div className="min-h-screen flex flex-col justify-center items-center gap-4 bg-gray-50">
-        <h1 className="text-2xl font-bold text-gray-800">Simulator data not found</h1>
-        <Link href="/hosting" className="text-orange-600 hover:underline font-medium">Back to My Simulators</Link>
-      </div>
-    );
-  }
-
-  const simName = simulator.simListName;
-  const simDesc = simulator.listDescription || simulator.description;
-  const simPrice = simulator.pricePerHour || 0;
-  const simImage = simulator.firstImage;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans flex flex-col">
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+    <div className="min-h-screen bg-white flex flex-col md:flex-row font-sans text-gray-900">
 
-        {/* ปรับแถบแจ้งเตือนด้านบนตามสถานะการจอง */}
-        {bookingStatus === 'pending' ? (
-          <div className="flex items-center gap-3 mb-8 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <div className="w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
-            <h1 className="text-xl font-bold text-yellow-800">This reservation is waiting for your confirmation.</h1>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 mb-8 bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <h1 className="text-xl font-bold text-green-800">Reservation Confirmed Successfully!</h1>
-          </div>
-        )}
 
-        <div className="flex flex-col lg:flex-row gap-10">
-          <div className="lg:w-[60%]">
-            <div className="w-full h-[400px] bg-gray-200 rounded-2xl mb-6 flex justify-center items-center text-gray-400 overflow-hidden relative shadow-sm">
-              {simImage ? (
-                <img src={simImage} alt={simName} className="w-full h-full object-cover" />
-              ) : (
-                <span>[ ภาพจำลองของ {simName} ]</span>
-              )}
-            </div>
-            <h2 className="text-3xl font-bold mb-4">{simName}</h2>
-            <p className="text-gray-600 font-medium text-lg leading-relaxed whitespace-pre-wrap">
-              {simDesc || 'ไม่มีคำอธิบาย'}
-            </p>
-          </div>
+      <aside className="w-full md:w-72 border-r border-gray-200 bg-white z-50 md:fixed md:left-0 md:top-20 md:h-screen overflow-y-auto">
+        <div className="p-8">
+          <Link href="/hosting/simulator" className="text-sm text-gray-500 hover:text-gray-900 mb-8 flex items-center gap-2 transition font-medium">
+            ← Back to Simulators
+          </Link>
 
-          <div className="lg:w-[40%]">
-            <div className="border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-6">
-              <div className="mb-6">
-                <h3 className="text-lg font-bold mb-3">Customer Information</h3>
-                <p className="text-gray-600 text-sm mb-1">Name: Tanakorn Pookongmek</p>
-                <p className="text-gray-600 text-sm">Tel: 091-1234-4567</p>
-              </div>
-              <hr className="my-6 border-gray-200" />
-              <div className="mb-6">
-                <h3 className="text-lg font-bold mb-3">Date/Time</h3>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">Tuesday</span>
-                  <span className="text-gray-900 font-medium">9:30-10:30</span>
-                </div>
-                <div className="flex justify-between text-sm mb-4">
-                  <span className="text-gray-600">Aug 12, 2026</span>
-                  <span className="text-gray-900 font-medium flex flex-col items-end gap-1">
-                    <span>10:30-11:30</span>
-                    <span>13:30-14:30</span>
-                  </span>
-                </div>
-              </div>
-              <hr className="my-6 border-gray-200" />
-              <div className="mb-8">
-                <h3 className="text-lg font-bold mb-3">Amount</h3>
-                <div className="flex justify-between text-sm font-medium items-center">
-                  <span className="text-gray-600">฿{simPrice} x 3 hrs</span>
-                  <span className="text-2xl font-bold text-orange-600">฿{(simPrice * 3).toLocaleString()}</span>
-                </div>
-              </div>
-
-              {/* เปลี่ยนปุ่มตามสถานะการจอง */}
-              <div className="flex flex-col gap-3">
-                {bookingStatus === 'pending' ? (
-                  <>
-                    <button
-                      onClick={handleConfirmReservation}
-                      disabled={isUpdating}
-                      className="w-full bg-[#ff5a5f] hover:bg-[#e04e53] text-white rounded-lg py-3 font-semibold transition shadow-sm hover:shadow-md disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-                    >
-                      {isUpdating ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                          Confirming...
-                        </>
-                      ) : (
-                        'Confirm Reservation'
-                      )}
-                    </button>
-                    <button
-                      disabled={isUpdating}
-                      className="w-full border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-800 rounded-lg py-3 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Cancel Reservation
-                    </button>
-                  </>
-                ) : (
-                  <button className="w-full bg-green-500 text-white rounded-lg py-3 font-semibold shadow-sm cursor-default flex justify-center items-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                    Completed Reservation
-                  </button>
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Management</h2>
+          <nav className="flex flex-col gap-1.5 mb-8">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={`text-left px-4 py-2.5 rounded-lg transition-all duration-200 flex items-center justify-between ${activeSection === item.id
+                  ? 'bg-orange-50 text-orange-600 font-bold'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium'
+                  }`}
+              >
+                <span>{item.label}</span>
+                {activeSection === item.id && (
+                  <div className="ml-auto w-2 h-2 rounded-full bg-orange-500 shadow-sm"></div>
                 )}
-              </div>
+              </button>
+            ))}
+          </nav>
 
+          <div className="border-t border-gray-100 pt-6">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Listing Status</h3>
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-semibold text-gray-700">Status</span>
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Active</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">Your listing is visible to renters in your area.</p>
+              <button className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                Switch to Hidden
+              </button>
             </div>
           </div>
+        </div>
+      </aside>
+
+
+      <main className="flex-1 p-8 md:p-12 lg:p-16 overflow-y-auto md:ml-72">
+        <div className="w-full">
+
+          <div className="mb-10">
+            <h1 className="text-4xl font-extrabold tracking-tight">Edit Simulator #{simulatorId}</h1>
+            <p className="text-gray-500 mt-2">Update your simulator information and details</p>
+          </div>
+
+          <div className="bg-white p-8 md:p-10 rounded-3xl border border-gray-200  space-y-16">
+
+
+            <section id="general" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">1</span>
+                General Information
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">Manage your name and description to attract professional races.</p>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Listing Name</label>
+                  <input
+                    type="text"
+                    value={formData.simulatorName}
+                    onChange={(e) => handleChange('simulatorName', e.target.value)}
+                    className={`w-full p-4 bg-gray-50 border ${errors.simulatorName ? 'border-red-500' : 'border-gray-200'} rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition`}
+                    placeholder="e.g. Pro Racing Rig V2"
+                  />
+                  {errors.simulatorName && <p className="text-red-500 text-sm mt-1.5">{errors.simulatorName}</p>}
+                  <p className="text-xs text-gray-400 mt-2">Recommended: Include the wheelbrase or primary brand.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    rows={4}
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition resize-y"
+                    placeholder="Describe the experience, the comfort, and the immersion levels..."
+                  />
+                </div>
+              </div>
+            </section>
+
+
+            <section id="location" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">2</span>
+                Location
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Location / Address</label>
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => handleChange('location', e.target.value)}
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                    placeholder="Location e.g. Sukhumvit 71..."
+                  />
+                </div>
+              </div>
+            </section>
+
+
+            <section id="photos" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">3</span>
+                Photos
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">Show off your setup. Use high quality lighting. Click an image to replace it.</p>
+
+              <div className="mb-8">
+                <h4 className="text-sm font-semibold text-gray-700 mb-4">Images</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {['firstImage', 'secondImage', 'thirdImage'].map((imageType, index) => (
+                    <div key={imageType}>
+                      <input
+                        type="file"
+                        ref={fileInputRefs[imageType as keyof typeof fileInputRefs]}
+                        accept=".jpg, .jpeg, .png, .webp, image/jpeg, image/png, image/webp"
+                        onChange={(e) => handleImageInputChange(e, imageType as 'firstImage' | 'secondImage' | 'thirdImage')}
+                        className="hidden"
+                      />
+                      {imageUrls[imageType as keyof typeof imageUrls] ? (
+                        <div
+                          onClick={() => fileInputRefs[imageType as keyof typeof fileInputRefs].current?.click()}
+                          className="relative w-full h-60 rounded-2xl overflow-hidden border-2 border-gray-200 bg-gray-50 cursor-pointer hover:border-orange-500 hover:shadow-lg transition group"
+                        >
+                          <img
+                            src={imageUrls[imageType as keyof typeof imageUrls]}
+                            alt={`Image ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:opacity-80 transition"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-40 transition">
+                            <span className="text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Click to replace</span>
+                          </div>
+                          <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">Image {index + 1}</div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => fileInputRefs[imageType as keyof typeof fileInputRefs].current?.click()}
+                          className="w-full h-60 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-orange-500 cursor-pointer transition flex flex-col items-center justify-center group"
+                        >
+                          <svg className="w-8 h-8 text-gray-400 group-hover:text-orange-500 transition mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <p className="text-sm font-semibold text-gray-700">Image {index + 1}</p>
+                          <p className="text-xs text-gray-500">Click to upload</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+
+            <section id="hardware" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-2 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">4</span>
+                Hardware Space
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">Tell us about the equipment included in your setup.</p>
+
+              <div className="space-y-8">
+                <div>
+                  <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    Platform
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { id: '1', name: 'PC', desc: 'Windows / Linux' },
+                      { id: '2', name: 'PlayStation', desc: 'Greatfence Ready' },
+                      { id: '3', name: 'Xbox Series', desc: 'Support' },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => handleChange('platformId', option.id)}
+                        className={`p-4 rounded-2xl border-2 transition ${formData.platformId === option.id
+                          ? 'border-orange-500 bg-orange-50'
+                          : 'border-gray-200 bg-gray-50 hover:border-orange-300'
+                          }`}
+                      >
+                        <div className="text-center">
+                          <p className="font-semibold text-gray-900">{option.name}</p>
+                          <p className="text-xs text-gray-500">{option.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    Wheel Base
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-2">BRAND</label>
+                      <select
+                        value={formData.wheelBaseBrandId}
+                        onChange={(e) => handleChange('wheelBaseBrandId', e.target.value)}
+                        className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm"
+                      >
+                        <option value="">Select brand...</option>
+                        {options.simulatorBrands.map((brand: any) => (
+                          <option key={brand.id} value={brand.id}>{brand.brandName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-2">MODEL</label>
+                      <select
+                        value={formData.wheelBaseModelId}
+                        onChange={(e) => handleChange('wheelBaseModelId', e.target.value)}
+                        className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm"
+                      >
+                        <option value="">Select model...</option>
+                        {options.simulatorMods
+                          .filter((mod: any) => mod.brandId === parseInt(formData.wheelBaseBrandId))
+                          .map((mod: any) => (
+                            <option key={mod.id} value={mod.id}>{mod.modelName}</option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    Pedals
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-2">BRAND</label>
+                      <select
+                        value={formData.pedalBrandId}
+                        onChange={(e) => handleChange('pedalBrandId', e.target.value)}
+                        className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm"
+                      >
+                        <option value="">Select brand...</option>
+                        {options.simulatorBrands.map((brand: any) => (
+                          <option key={brand.id} value={brand.id}>{brand.brandName}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-2">MODEL</label>
+                      <select
+                        value={formData.pedalModelId}
+                        onChange={(e) => handleChange('pedalModelId', e.target.value)}
+                        className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm"
+                      >
+                        <option value="">Select model...</option>
+                        {options.pedals
+                          .filter((pedal: any) => pedal.brandId === parseInt(formData.pedalBrandId))
+                          .map((pedal: any) => (
+                            <option key={pedal.id} value={pedal.id}>{pedal.modelName}</option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    Screen Setup
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[
+                      { id: '1', name: 'Single' },
+                      { id: '2', name: 'Triple' },
+                      { id: '3', name: 'Ultrawide' },
+                      { id: '4', name: 'VR Headset' },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => handleChange('screenSetupId', option.id)}
+                        className={`p-4 rounded-2xl border-2 transition text-center ${formData.screenSetupId === option.id
+                          ? 'border-orange-500 bg-orange-50'
+                          : 'border-gray-200 bg-gray-50 hover:border-orange-300'
+                          }`}
+                      >
+                        <p className="font-semibold text-gray-900 text-sm">{option.name}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+
+            <section id="pricing" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">5</span>
+                Pricing & Availability
+              </h3>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Price Per Hour (THB)</label>
+                  <div className="relative max-w-sm">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-lg">฿</span>
+                    <input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => handleChange('price', e.target.value)}
+                      className={`w-full pl-12 p-4 text-lg bg-gray-50 border ${errors.price ? 'border-red-500' : 'border-gray-200'} rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition font-semibold`}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  {errors.price && <p className="text-red-500 text-sm mt-1.5">{errors.price}</p>}
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                  <p className="text-sm text-orange-900 font-medium">
+                    <span className="font-bold">Platform Fee:</span> We charge a flat 10% service fee on every booking to help maintain the platform and provide 24/7 support.
+                  </p>
+                  <p className="text-xs text-orange-700 mt-2">Your estimated take-home: 25.00 / hr</p>
+                </div>
+              </div>
+            </section>
+
+          </div>
+
+
+          <div className="mt-8 flex justify-end gap-3 pb-20 md:pb-0">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3.5 rounded-lg text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleUpdate}
+              disabled={isSubmitting}
+              className={`px-10 py-3.5 rounded-lg text-sm font-bold text-white transition ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600 border-2 border-orange-500'
+                }`}
+            >
+              {isSubmitting ? 'Saving...' : 'Save & Exit'}
+            </button>
+          </div>
+
         </div>
       </main>
-
-      <footer className="bg-[#f7f7f7] border-t border-gray-200 py-10 mt-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="border-t border-gray-300 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
-            <p>© Simhouse. · Privacy · Terms · Sitemap</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

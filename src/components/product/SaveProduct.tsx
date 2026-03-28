@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaRegHeart } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 
 const SaveProduct = ({ productID }: { productID: number }) => {
-	const [isSave, Save] = useState(false);
-	useEffect(() => {
-		// Access localStorage only on the client-side
-		const savedProducts = JSON.parse(localStorage.getItem("saved") || "[]");
-		Save(savedProducts.includes(productID));
-	}, [productID]);
+	const [isSave, Save] = useState(() => {
+		// Check if this component is mounted on the client side
+		if (typeof window !== 'undefined') {
+			const savedProducts = JSON.parse(localStorage.getItem("saved") || "[]");
+			return savedProducts.includes(productID);
+		}
+		return false;
+	});
 
 	const handleSave = () => {
 		const savedProducts = JSON.parse(localStorage.getItem("saved") || "[]");

@@ -4,6 +4,8 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { LocationProvider } from "@/context/LocationContext";
+import { getCachedCountries } from "@/lib/location-api";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -15,18 +17,23 @@ export const metadata: Metadata = {
 	description: "Racing Simulator Booking Platform",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	// Fetch countries server-side once and cache them
+	const countries = await getCachedCountries();
+
 	return (
 		<html lang="en" className={cn(overpass.variable, "font-sans", inter.variable)}>
 			<body
 				className={`${overpass.className} ${overpass.variable} ${inter.variable} antialiased min-h-screen`}
 			>
-				{children}
-				<Toaster position="top-center" richColors />
+				<LocationProvider initialCountries={countries}>
+					{children}
+					<Toaster position="top-center" richColors />
+				</LocationProvider>
 			</body>
 		</html>
 	);

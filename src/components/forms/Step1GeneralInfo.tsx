@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LocationPicker from '@/components/location-picker/LocationPicker';
 
 interface Step1Props {
     formData: any;
@@ -8,11 +9,11 @@ interface Step1Props {
 }
 
 export default function Step1GeneralInfo({ formData, setFormData, next, onClose }: Step1Props) {
-    const [errors, setErrors] = useState<{ simulatorName?: string; description?: string; location?: string }>({});
+    const [errors, setErrors] = useState<{ name?: string; description?: string; location?: string }>({});
 
     const handleNext = () => {
         const newErrors: typeof errors = {};
-        if (!formData.simulatorName?.trim()) newErrors.simulatorName = 'Simulator name is required.';
+        if (!formData.name?.trim()) newErrors.name = 'Simulator name is required.';
         if (!formData.description?.trim()) newErrors.description = 'Description is required.';
         if (!formData.location?.trim()) newErrors.location = 'Installation location is required.';
 
@@ -41,15 +42,15 @@ export default function Step1GeneralInfo({ formData, setFormData, next, onClose 
                     </label>
                     <input
                         type="text"
-                        value={formData.simulatorName || ''}
+                        value={formData.name || ''}
                         onChange={(e) => {
-                            setFormData({ ...formData, simulatorName: e.target.value });
-                            if (errors.simulatorName) setErrors(prev => ({ ...prev, simulatorName: undefined }));
+                            setFormData({ ...formData, name: e.target.value });
+                            if (errors.name) setErrors(prev => ({ ...prev, name: undefined }));
                         }}
                         placeholder="e.g., Moza R5 at Pattaya Hotel"
-                        className={`w-full px-4 py-3 border rounded-lg text-sm ${errors.simulatorName ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-4 py-3 border rounded-lg text-sm ${errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
                     />
-                    {errors.simulatorName && <p className="mt-1 text-xs text-red-500">{errors.simulatorName}</p>}
+                    {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
                 </div>
                 <div>
                     <label className="block text-sm font-semibold mb-2">
@@ -71,27 +72,42 @@ export default function Step1GeneralInfo({ formData, setFormData, next, onClose 
                     <label className="block text-sm font-semibold mb-2">
                         Installation Location <span className="text-red-500">*</span>
                     </label>
-                    <input
-                        type="text"
-                        value={formData.location || ''}
-                        onChange={(e) => {
-                            setFormData({ ...formData, location: e.target.value });
-                            if (errors.location) setErrors(prev => ({ ...prev, location: undefined }));
-                        }}
-                        placeholder="e.g., Berlin Facility - Room 302"
-                        className={`w-full px-4 py-3 border rounded-lg text-sm ${errors.location ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-                    />
-                    {errors.location && <p className="mt-1 text-xs text-red-500">{errors.location}</p>}
+                    <div className="space-y-3">
+                        <input
+                            type="text"
+                            value={formData.location || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, location: e.target.value });
+                                if (errors.location) setErrors(prev => ({ ...prev, location: undefined }));
+                            }}
+                            placeholder="e.g., Berlin Facility - Room 302 or coordinates from map"
+                            className={`w-full px-4 py-3 border rounded-lg text-sm ${errors.location ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.location && <p className="text-xs text-red-500">{errors.location}</p>}
+
+                        {/* Location Picker Map - Always Visible */}
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <LocationPicker
+                                onLocationSelect={(location) => {
+                                    setFormData({
+                                        ...formData,
+                                        location: location.address || `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+                                        latitude: location.lat,
+                                        longitude: location.lng,
+                                        countryId: location.countryId,
+                                        cityId: location.cityId,
+                                    });
+                                    if (errors.location) setErrors(prev => ({ ...prev, location: undefined }));
+                                }}
+                                existingLat={formData.latitude}
+                                existingLng={formData.longitude}
+                            />
+                        </div>
+                    </div>
                 </div>
             </form>
 
             <div className="mt-12 pt-6 border-t border-gray-200 flex justify-end gap-4">
-                <button
-                    onClick={onClose}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-gray-800 border border-gray-300 hover:bg-gray-50 transition"
-                >
-                    Save Draft
-                </button>
                 <button
                     onClick={handleNext}
                     className="px-10 py-2.5 rounded-lg text-sm font-semibold text-white bg-orange-600 hover:bg-orange-700 transition"

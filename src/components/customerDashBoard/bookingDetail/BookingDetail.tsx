@@ -236,7 +236,7 @@ export default function BookingDetailBody({
 				)}
 				<hr className="col-span-3" />
 				<div className="w-full col-span-3">
-					<h1 className="text-[22px] font-medium mb-6">Where you'll play</h1>
+					<h1 className="text-[22px] font-medium mb-6">Where you&apos;ll play</h1>
 					<div className=" rounded-2xl overflow-hidden">
 						<ProductMap
 							hostid={simulator.hostId}

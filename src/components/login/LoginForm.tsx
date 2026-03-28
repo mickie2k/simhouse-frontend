@@ -22,7 +22,7 @@ export default function LoginhtmlForm(
 
 	useEffect(() => {
 		if (isAuthenticated) {
-			router.push("/");
+			router.push("/hosting");
 		}
 	}, [isAuthenticated, router]);
 

@@ -109,8 +109,8 @@ export default function HostBookingDetailPage() {
         if (!booking) return;
         setIsConfirming(true);
         try {
-            await axiosJWTInstance.patch(`/host/booking/${booking.id}`, { statusId: 2 });
-            toast.success('Booking confirmed! ✅');
+            await axiosJWTInstance.post(`/host/booking/${simId}/${booking.id}/confirm`);
+            toast.success('Booking confirmed');
             setBooking({ ...booking, statusId: 2, bookingStatus: { id: 2, statusName: 'CONFIRM' } });
         } catch (error: any) {
             console.error('Failed to confirm booking:', error);
@@ -125,7 +125,7 @@ export default function HostBookingDetailPage() {
         setIsCanceling(true);
         try {
             await axiosJWTInstance.patch(`/host/booking/${booking.id}`, { statusId: 0 });
-            toast.success('Booking canceled ✅');
+            toast.success('Booking canceled');
             setBooking({ ...booking, statusId: 0, bookingStatus: { id: 0, statusName: 'CANCELED' } });
         } catch (error: any) {
             console.error('Failed to cancel booking:', error);
@@ -325,7 +325,7 @@ export default function HostBookingDetailPage() {
                             ) : booking.statusId === 2 || booking.bookingStatus.statusName.toUpperCase() === 'CONFIRM' ? (
                                 <>
                                     <button disabled className="w-full bg-green-100 border border-green-300 text-green-700 font-semibold py-3 px-4 rounded-lg cursor-default">
-                                        ✓ Confirmed
+                                        Confirmed
                                     </button>
                                     <button
                                         onClick={handleCancelBooking}

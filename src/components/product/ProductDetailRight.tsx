@@ -4,6 +4,7 @@ import {
 	SetStateAction,
 	useContext,
 	useEffect,
+	useMemo,
 	useState,
 } from "react";
 import { toast } from "sonner";
@@ -22,7 +23,6 @@ export default function ProductDetailRight({
 	setModal: Dispatch<SetStateAction<boolean>>;
 	bookList: number[];
 }) {
-	const [total, setTotal] = useState<number>(0);
 	const [loading, isLoading] = useState<boolean>(false);
 	const { date, startTime, endTime } = useContext(DateContext);
 	const { isAuthenticated, loading: authLoading } = useCustomerAuth();
@@ -30,14 +30,12 @@ export default function ProductDetailRight({
 
 	const options = {
 		year: "numeric" as const,
-		month: "short" as const, // 'short' gives you the abbreviated month name
+		month: "short" as const,
 		day: "numeric" as const,
 	};
 
 	const formattedDate = new Date(date).toLocaleDateString("en-US", options);
-	useEffect(() => {
-		setTotal(product.pricePerHour * bookList.length);
-	}, [bookList, product.pricePerHour]);
+	const total = useMemo(() => product.pricePerHour * bookList.length, [bookList, product.pricePerHour]);
 
 	function onClickDate() {
 		setModal(true);
@@ -129,7 +127,7 @@ export default function ProductDetailRight({
 					</div>
 					<div className="text-black2 font-normal text-base justify-between flex w-full">
 						<span>
-							${product.pricePerHour} x {bookList.length} hours
+							฿{product.pricePerHour} x {bookList.length} hours
 						</span>
 						<span>${total}</span>
 					</div>

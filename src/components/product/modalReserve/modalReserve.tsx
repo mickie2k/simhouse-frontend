@@ -1,7 +1,7 @@
 "use client";
 import { Product } from "@/types";
 import BookingSchedule from "./bookingSchedule";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function ModalReserve({
 	onClose,
@@ -16,11 +16,7 @@ export default function ModalReserve({
 	endTime?: string;
 	product: Product;
 }) {
-	const [total, setTotal] = useState<number>(0);
-
-	useEffect(() => {
-		setTotal(product.pricePerHour * bookList.length);
-	}, [bookList, product.pricePerHour]);
+	const total = useMemo(() => product.pricePerHour * bookList.length, [bookList, product.pricePerHour]);
 
 	function addList(id: number) {
 		if (bookList.find((item) => item === id)) {
@@ -88,7 +84,7 @@ export default function ModalReserve({
 					{bookList.length > 0 ? (
 						<>
 							<span className="font-medium">
-								${product.pricePerHour} × {bookList.length}{" "}
+								฿{product.pricePerHour} × {bookList.length}{" "}
 								{bookList.length === 1 ? "hr" : "hrs"}
 							</span>
 							<span className="ml-3 text-secondText">

@@ -33,15 +33,6 @@ export default function SearchBox({ compact = false }: SearchBoxProps) {
         date: searchParams.get("startDate") ?? "",
     }));
 
-    // Keep form in sync when URL params change (e.g. after navigation)
-    useEffect(() => {
-        setFormData((prev) => ({
-            ...prev,
-            simTypeId: searchParams.get("simTypeIds") ?? "",
-            date: searchParams.get("startDate") ?? "",
-        }));
-    }, [searchParams]);
-
     const [isTypeOpen, setIsTypeOpen] = useState(false);
     const [isDateOpen, setIsDateOpen] = useState(false);
     const typeRef = useRef<HTMLDivElement>(null);

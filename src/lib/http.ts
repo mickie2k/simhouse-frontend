@@ -31,7 +31,7 @@ const AUTH_ROUTES: Record<AuthScope, AuthRouteConfig> = {
     },
     host: {
         refreshEndpoint: "/auth/host/refresh",
-        loginRedirect: "/host/login",
+        loginRedirect: "/hosting/login",
     },
 };
 

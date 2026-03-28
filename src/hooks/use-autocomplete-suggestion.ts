@@ -61,7 +61,9 @@ export function useAutocompleteSuggestions(
     // once the PlacesLibrary is loaded and whenever the input changes, a query
     // is sent to the Autocomplete Data API.
     useEffect(() => {
-        if (!placesLib) return;
+        if (!placesLib || inputString === "") {
+            return;
+        }
 
         const { AutocompleteSessionToken, AutocompleteSuggestion } = placesLib;
 
@@ -78,19 +80,16 @@ export function useAutocompleteSuggestions(
             sessionToken: sessionTokenRef.current,
         };
 
-        if (inputString === "") {
-            if (suggestions.length > 0) setSuggestions([]);
-            return;
-        }
-
-        setIsLoading(true);
-        AutocompleteSuggestion.fetchAutocompleteSuggestions(request).then(
-            (res) => {
+        // Fetch suggestions asynchronously
+        AutocompleteSuggestion.fetchAutocompleteSuggestions(request)
+            .then((res) => {
                 setSuggestions(res.suggestions);
-                setIsLoading(false);
-            },
-        );
-    }, [placesLib, inputString]);
+            })
+            .catch((error) => {
+                console.error("Error fetching suggestions:", error);
+                setSuggestions([]);
+            });
+    }, [placesLib, inputString, requestOptions]);
 
     return {
         suggestions,

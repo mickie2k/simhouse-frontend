@@ -74,7 +74,7 @@ export default function BookingCard({ booking }: { booking: Booking }) {
 						</div>
 						<div className="flex w-full">
 							<span className="text-sm font-light">
-								<strong>Price</strong> : ${product.pricePerHour}
+								<strong>Price</strong> : ฿{product.pricePerHour}
 							</span>
 							<h4 className="text-sm font-light text-black2">
 								<span className="font-light text-secondText text-sm">/hrs</span>

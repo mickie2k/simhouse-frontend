@@ -21,13 +21,9 @@ export default function PlaceAutocomplete({
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	// Sync if initialValue changes (e.g. navigating to different search)
-	const prevInitialValue = useRef(initialValue);
+	// Update input value when initialValue prop changes
 	useEffect(() => {
-		if (initialValue !== prevInitialValue.current) {
-			setInputValue(initialValue);
-			prevInitialValue.current = initialValue;
-		}
+		setInputValue(initialValue);
 	}, [initialValue]);
 
 	const { suggestions, resetSession } = useAutocompleteSuggestions(inputValue);

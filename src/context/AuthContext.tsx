@@ -92,7 +92,7 @@ export function createAuthContext<T>(options: AuthOptions) {
 			} catch (error) {
 				console.error("Logout failed:", error);
 			}
-		}, [router, logoutRedirect]);
+		}, [router]);
 
 		const value = useMemo(() => ({
 			user,

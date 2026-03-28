@@ -1,5 +1,29 @@
+"use client"
+
 import HostNavbar from "@/components/navbar/hostNavbar";
-import { HostAuthProvider } from "@/context/HostAuthContext";
+import { HostAuthProvider, useHostAuth } from "@/context/HostAuthContext";
+import ProtectedRoute from "@/lib/protect-routes";
+
+function HostLayoutContent({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    const { isAuthenticated, loading } = useHostAuth();
+
+    return (
+        <ProtectedRoute
+            isAuthenticated={isAuthenticated}
+            loading={loading}
+            unauthorizedRedirect="/hosting/login"
+        >
+            <div id="_next">
+                <HostNavbar />
+                {children}
+            </div>
+        </ProtectedRoute>
+    );
+}
 
 export default function HostLayout({
     children,
@@ -8,10 +32,7 @@ export default function HostLayout({
 }>) {
     return (
         <HostAuthProvider>
-            <div id="_next">
-                <HostNavbar />
-                {children}
-            </div>
+            <HostLayoutContent>{children}</HostLayoutContent>
         </HostAuthProvider>
     );
 }

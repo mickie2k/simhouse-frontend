@@ -13,7 +13,7 @@ export default function CustomerError({
 				<div className="text-6xl mb-4">😕</div>
 				<h2 className="text-3xl font-bold mb-3">Oops!</h2>
 				<p className="text-gray-600 mb-6">
-					We're having trouble loading this page. Please try again in a moment.
+					We&apos;re having trouble loading this page. Please try again in a moment.
 				</p>
 				{process.env.NODE_ENV === 'development' && (
 					<details className="text-left text-sm text-gray-500 mb-6 p-4 bg-gray-50 rounded">

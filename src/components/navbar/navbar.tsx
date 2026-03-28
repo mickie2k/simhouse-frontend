@@ -9,7 +9,7 @@ import SearchBox from "@/components/home/SearchBox";
 export default function Navbar() {
 	const pathname = usePathname();
 	const [isMenu, setisMenu] = useState(false);
-	const [scroll, setScroll] = useState(false);
+	const [scroll, setScroll] = useState(pathname !== "/");
 	const { user, isAuthenticated, logout } = useCustomerAuth();
 
 	const changeNavbar = () => {
@@ -23,9 +23,6 @@ export default function Navbar() {
 	useEffect(() => {
 		if (pathname === "/") {
 			window.addEventListener("scroll", changeNavbar);
-			setScroll(false);
-		} else {
-			setScroll(true);
 		}
 		return () => {
 			window.removeEventListener("scroll", changeNavbar);
@@ -102,7 +99,7 @@ export default function Navbar() {
 			)}
 
 			<div className="flex justify-between items-center gap-7 shrink-0">
-				<Link href="/" className="text-sm">
+				<Link href="/hosting" className="text-sm">
 					Become a Host
 				</Link>
 				{isAuthenticated ? (

@@ -1,122 +1,278 @@
-"use client";
+'use client'
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { FaStar } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { axiosJWTInstance } from '@/lib/http';
-import AddSimulatorModal from '@/components/AddSimulatorModal';
 
-export default function MySimulatorsPage() {
-    const [simulators, setSimulators] = useState<any[]>([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showToast, setShowToast] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+interface Customer {
+  id: number;
+  username: string;
+  email: string;
+  ProfileImageUrl?: string;
+}
 
-    const fetchSimulators = async () => {
+interface Simulator {
+  id: number;
+  simListName: string;
+}
+
+interface BookingStatus {
+  id: number;
+  statusName: string;
+}
+
+interface BookingResponse {
+  id: number;
+  bookingDate: string;
+  totalPrice: string;
+  statusId: number;
+  customerId: number;
+  simId: number;
+  bookingStatus: BookingStatus;
+  customer: Customer;
+  simulator: Simulator;
+}
+
+interface BookingTableData {
+  id: number;
+  simId: number;
+  customer: string;
+  sim: string;
+  schedule: string;
+  duration: string;
+  price: number;
+  status: string;
+  avatar: string;
+}
+
+interface OverviewData {
+  pendingRequests: number;
+  newRequests: number;
+  todayBookings: number;
+  monthlyRevenue: number;
+  rating: number;
+  totalReviews: number;
+}
+
+export default function BookingsManagementPage() {
+  const router = useRouter();
+
+  const [bookings, setBookings] = useState<BookingTableData[]>([]);
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
         setIsLoading(true);
-        try {
-            const { data } = await axiosJWTInstance.get('/host/simulator');
-            const fetchedSimulators = Array.isArray(data) ? data : data.data || [];
-            setSimulators(fetchedSimulators);
-        } catch (error) {
-            console.error('Failed to fetch simulators:', error);
-            setSimulators([]);
-        } finally {
-            setIsLoading(false);
+
+        // Fetch overview data
+        const overviewResponse = await axiosJWTInstance.get<OverviewData>('/host/overview');
+        if (overviewResponse.status === 200) {
+          setOverview(overviewResponse.data);
         }
+
+        // Fetch bookings data
+        const response = await axiosJWTInstance.get<BookingResponse[]>('/host/booking');
+
+        if (response.status !== 200) {
+          throw new Error(`Failed to fetch bookings: ${response.statusText}`);
+        }
+        const { data } = response;
+
+        console.log('Raw booking data:', data);
+        const allRawBookings = Array.isArray(data) ? data : (data as any).data || [];
+
+        const formattedData: BookingTableData[] = (allRawBookings as BookingResponse[]).map((raw) => ({
+          id: raw.id,
+          simId: raw.simId,
+          customer: raw.customer?.username || 'Unknown',
+          sim: raw.simulator?.simListName || 'Unknown Sim',
+          schedule: new Date(raw.bookingDate).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          }),
+          duration: 'N/A',
+          price: parseFloat(raw.totalPrice) || 0,
+          status: raw.bookingStatus?.statusName || 'PENDING',
+          avatar: 'https://via.placeholder.com/150'
+        }));
+
+        formattedData.sort((a, b) => new Date(b.schedule).getTime() - new Date(a.schedule).getTime());
+        setBookings(formattedData);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    useEffect(() => {
-        fetchSimulators();
-    }, []);
+    fetchData();
+  }, []);
 
-    const refreshData = () => {
-        fetchSimulators();
-    };
+  const getStatusBadge = (status: string) => {
+    const statusUpper = status.toUpperCase();
+    switch (statusUpper) {
+      case 'PENDING':
+        return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pending</span>;
+      case 'CONFIRM':
+      case 'CONFIRMED':
+        return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Confirmed</span>;
+      case 'COMPLETED':
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">Completed</span>;
+      case 'CANCELED':
+      case 'CANCELLED':
+        return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Canceled</span>;
+      default:
+        return <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{status}</span>;
+    }
+  };
 
-    return (
-        <div className="min-h-screen bg-gray-50 pb-20 relative">
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">My Simulators</h1>
-                </div>
+  return (
+    <div className="h-full bg-white text-gray-900 font-sans">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                {isLoading ? (
-                    <div className="flex justify-center items-center h-[320px]">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-                        <span className="ml-4 text-gray-500 font-medium">Loading data...</span>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div
-                            onClick={() => setIsModalOpen(true)}
-                            className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col justify-center items-center h-[320px] hover:bg-gray-100 hover:border-gray-400 transition cursor-pointer bg-white group"
-                        >
-                            <div className="text-5xl text-gray-300 group-hover:text-gray-500 mb-4 transition">+</div>
-                            <h3 className="font-bold text-lg text-gray-700 group-hover:text-gray-900 transition">Add New Simulator</h3>
-                            <p className="text-gray-400 text-sm text-center px-6 mt-2">List a new simulator to earn more.</p>
-                        </div>
-
-                        {simulators.map((sim, index) => {
-                            const simId = sim.id;
-
-                            return (
-                                <Link
-                                    href={`/hosting/simulator/${simId}/edit`}
-                                    key={simId || index}
-                                    className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col h-[320px] cursor-pointer"
-                                >
-                                    <div className="h-44 bg-gray-200 relative flex justify-center items-center text-gray-400 text-sm overflow-hidden">
-                                        {sim.firstImage ? (
-                                            <img src={sim.firstImage} alt={sim.simListName} className="w-full h-full object-cover" />
-                                        ) : (
-                                            "[ Simulator Image ]"
-                                        )}
-                                    </div>
-                                    <div className="p-5 flex flex-col flex-grow justify-between">
-                                        <div>
-                                            <div className="flex justify-between items-start mb-1">
-                                                <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
-                                                    {sim.simListName || 'No Name'}
-                                                </h3>
-                                                <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
-                                                    <FaStar className="text-yellow-400" /> {sim.rating || "5.0"}
-                                                </div>
-                                            </div>
-                                            <p className="text-gray-500 text-sm line-clamp-2">
-                                                {sim.listDescription || 'No description'}
-                                            </p>
-                                        </div>
-                                        <div className="mt-4 font-bold text-lg text-gray-900">
-                                            ฿{sim.pricePerHour || 0} <span className="text-sm font-normal text-gray-500">/hr</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                )}
-            </main>
-
-            {isModalOpen && (
-                <AddSimulatorModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSuccess={() => {
-                        setIsModalOpen(false);
-                        refreshData();
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                    }}
-                />
-            )}
-
-            {showToast && (
-                <div className="fixed bottom-10 right-10 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in-up">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex justify-center items-center text-white text-sm font-bold">✓</div>
-                    <span className="font-medium">Simulator added successfully!</span>
-                </div>
-            )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 ">
+            <p className="text-sm text-gray-500 font-medium mb-2">Pending Requests</p>
+            <div className="flex items-end gap-2">
+              <span className="text-4xl font-bold">{overview?.pendingRequests ?? 0}</span>
+              {overview && overview.newRequests > 0 && (
+                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded mb-1">+{overview.newRequests} new</span>
+              )}
+            </div>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 ">
+            <p className="text-sm text-gray-500 font-medium mb-2">Today&apos;s Bookings</p>
+            <span className="text-4xl font-bold">{overview?.todayBookings ?? 0}</span>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 ">
+            <p className="text-sm text-gray-500 font-medium mb-2">Monthly Revenue</p>
+            <span className="text-4xl font-bold">฿{(overview?.monthlyRevenue ?? 0).toFixed(2)}</span>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 ">
+            <p className="text-sm text-gray-500 font-medium mb-2">Rating</p>
+            <div className="flex items-center gap-1">
+              <span className="text-4xl font-bold">{overview?.rating ?? 0}</span>
+              <svg className="w-6 h-6 text-yellow-400 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+            </div>
+          </div>
         </div>
-    );
+
+
+        <div className="bg-white border border-gray-200 rounded-2xl  overflow-hidden">
+
+
+          <div className="p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h2 className="text-xl font-bold text-gray-900">Bookings Management</h2>
+            <div className="flex flex-wrap gap-3">
+              <select className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block px-4 py-2">
+                <option>All Status</option>
+                <option>Pending</option>
+                <option>Confirmed</option>
+              </select>
+              <select className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-orange-500 focus:border-orange-500 block px-4 py-2">
+                <option>Last 30 Days</option>
+                <option>Last 7 Days</option>
+              </select>
+              <button className="bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4">Simulator</th>
+                  <th className="px-6 py-4">Schedule</th>
+                  <th className="px-6 py-4">Duration</th>
+                  <th className="px-6 py-4">Price</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white text-sm">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500 flex flex-col items-center justify-center">
+                      <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+                      Loading bookings...
+                    </td>
+                  </tr>
+                ) : bookings.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
+                      No bookings found
+                    </td>
+                  </tr>
+                ) : (
+                  bookings.map((booking) => (
+                    <tr
+                      key={booking.id}
+                      onClick={() => router.push(`/hosting/bookings/${booking.simId}/${booking.id}`)}
+                      className="hover:bg-gray-100 transition cursor-pointer"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <img src={booking.avatar} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                          <span className="font-semibold text-gray-900">{booking.customer}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.sim}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.schedule}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.duration}</td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">${booking.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(booking.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-2">
+                        {booking.status.toUpperCase() === 'PENDING' ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+
+                              console.log('Confirming booking:', booking.id);
+                            }}
+                            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-md transition text-xs font-semibold"
+                          >
+                            Confirm
+                          </button>
+                        ) : (
+                          <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
+                            Details
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-gray-400 hover:text-gray-600 ml-2"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+
+          <div className="p-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+            <div>Showing results</div>
+            <div className="flex gap-1">
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&lt;</button>
+              <button className="px-3 py-1 bg-orange-600 text-white rounded font-medium">1</button>
+              <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">&gt;</button>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  );
 }

@@ -31,7 +31,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 				</div>
 				<div className="">
 					<h4 className="text-xl font-bold text-black2">
-						${product.pricePerHour}
+						฿{product.pricePerHour}
 						<span className="font-light text-secondText text-base">/hrs</span>
 					</h4>
 				</div>

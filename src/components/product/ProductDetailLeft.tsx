@@ -28,7 +28,7 @@ export default function ProductDetailLeft({ product }: { product: Product }) {
 			</div>
 			<hr className="my-4" />
 			<div className="w-full overflow-hidden ">
-				<h1 className="text-[22px] font-medium mb-6">Where you'll play</h1>
+				<h1 className="text-[22px] font-medium mb-6">Where you&apos;ll play</h1>
 				<div className="rounded-xl overflow-hidden w-full ">
 					<ProductMap
 						lat={product.latitude}

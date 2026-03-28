@@ -11,7 +11,7 @@ export default function BookingDate({
 	date: string;
 	data: Schedule[];
 }) {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	 
 	const [year, month, day] = date.split("-").map(Number);
 
 	// Array of month names
