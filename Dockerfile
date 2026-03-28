@@ -51,6 +51,14 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
+# Accept build arguments for Next.js public environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+
+# Set environment variables for the build
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+
 # Build Next.js application
 # If you want to speed up Docker rebuilds, you can cache the build artifacts
 # by adding: --mount=type=cache,target=/app/.next/cache
