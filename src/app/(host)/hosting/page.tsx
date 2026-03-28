@@ -42,7 +42,6 @@ interface BookingTableData {
   duration: string;
   price: number;
   status: string;
-  avatar: string;
 }
 
 interface OverviewData {
@@ -52,6 +51,19 @@ interface OverviewData {
   monthlyRevenue: number;
   rating: number;
   totalReviews: number;
+}
+
+function getInitials(name: string) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((segment) => segment[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return initials || '?';
 }
 
 export default function BookingsManagementPage() {
@@ -93,8 +105,7 @@ export default function BookingsManagementPage() {
           }),
           duration: 'N/A',
           price: parseFloat(raw.totalPrice) || 0,
-          status: raw.bookingStatus?.statusName || 'PENDING',
-          avatar: 'https://via.placeholder.com/150'
+          status: raw.bookingStatus?.statusName || 'PENDING'
         }));
 
         formattedData.sort((a, b) => new Date(b.schedule).getTime() - new Date(a.schedule).getTime());
@@ -219,7 +230,9 @@ export default function BookingsManagementPage() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <img src={booking.avatar} alt="" className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700">
+                            {getInitials(booking.customer)}
+                          </div>
                           <span className="font-semibold text-gray-900">{booking.customer}</span>
                         </div>
                       </td>

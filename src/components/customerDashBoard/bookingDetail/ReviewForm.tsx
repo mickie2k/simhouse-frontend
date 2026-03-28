@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { axiosJWTInstance } from "@/lib/http";
 import { toast } from "sonner";
 import { IoIosCheckmarkCircle } from "react-icons/io";
@@ -35,8 +35,8 @@ function StarRating({
                     onMouseEnter={() => setHovered(star)}
                     onMouseLeave={() => setHovered(0)}
                     className={`${size} focus:outline-none transition-colors leading-none ${star <= (hovered || value)
-                            ? "text-yellow-400"
-                            : "text-neutral-300"
+                        ? "text-yellow-400"
+                        : "text-neutral-300"
                         }`}
                     aria-label={`Rate ${star} out of 5`}
                 >
@@ -54,13 +54,20 @@ export default function ReviewForm({
     bookingId: number;
     alreadyReviewed?: boolean;
 }) {
-    const [overallRating, setOverallRating] = useState(0);
     const [comment, setComment] = useState("");
     const [ratings, setRatings] = useState<Record<number, number>>(
         Object.fromEntries(REVIEW_TYPES.map((t) => [t.typeId, 0]))
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(alreadyReviewed);
+
+    // Calculate overall rating as average of all category ratings
+    const overallRating = useMemo(() => {
+        const allRatings = Object.values(ratings);
+        const ratedValues = allRatings.filter((r) => r > 0);
+        if (ratedValues.length === 0) return 0;
+        return Math.round((ratedValues.reduce((a, b) => a + b, 0) / ratedValues.length) * 10) / 10;
+    }, [ratings]);
 
     const setRating = (typeId: number, rating: number) => {
         setRatings((prev) => ({ ...prev, [typeId]: rating }));
@@ -69,10 +76,6 @@ export default function ReviewForm({
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        if (overallRating === 0) {
-            toast.error("Please provide an overall rating.");
-            return;
-        }
         if (Object.values(ratings).some((r) => r === 0)) {
             toast.error("Please rate all categories.");
             return;
@@ -120,14 +123,30 @@ export default function ReviewForm({
                 onSubmit={handleSubmit}
                 className="border border-borderColor2 rounded-2xl p-6 flex flex-col gap-6"
             >
-                {/* Overall Rating */}
+                {/* Overall Rating - Auto-calculated */}
                 <div className="flex flex-col gap-2">
                     <label className="text-base font-medium">Overall Rating</label>
-                    <StarRating
-                        value={overallRating}
-                        onChange={setOverallRating}
-                        size="text-4xl"
-                    />
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                    key={star}
+                                    className={`text-4xl leading-none ${star <= overallRating
+                                        ? "text-yellow-400"
+                                        : "text-neutral-300"
+                                        }`}
+                                >
+                                    ★
+                                </span>
+                            ))}
+                        </div>
+                        <span className="text-lg font-semibold text-neutral-700">
+                            {overallRating > 0 ? overallRating.toFixed(1) : "—"}
+                        </span>
+                    </div>
+                    <p className="text-xs text-neutral-500">
+                        Automatically calculated from your category ratings
+                    </p>
                 </div>
                 <hr />
                 {/* Category Ratings */}

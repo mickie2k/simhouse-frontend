@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import { axiosJWTInstance } from '@/lib/http';
 import AddSimulatorModal from '@/components/AddSimulatorModal';
@@ -68,7 +69,7 @@ export default function MySimulatorsPage() {
                                 >
                                     <div className="h-44 bg-gray-200 relative flex justify-center items-center text-gray-400 text-sm overflow-hidden">
                                         {sim.firstImage ? (
-                                            <img src={sim.firstImage} alt={sim.simListName} className="w-full h-full object-cover" />
+                                            <Image src={sim.firstImage} alt={sim.simListName} fill className="object-cover" />
                                         ) : (
                                             "[ Simulator Image ]"
                                         )}
@@ -79,9 +80,9 @@ export default function MySimulatorsPage() {
                                                 <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
                                                     {sim.simListName || 'No Name'}
                                                 </h3>
-                                                <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
+                                                {/* <div className="flex items-center gap-1 text-sm font-medium text-gray-700">
                                                     <FaStar className="text-yellow-400" /> {sim.rating || "5.0"}
-                                                </div>
+                                                </div> */}
                                             </div>
                                             <p className="text-gray-500 text-sm line-clamp-2">
                                                 {sim.listDescription || 'No description'}

@@ -28,7 +28,7 @@ export default function Step1GeneralInfo({ formData, setFormData, next, onClose 
     return (
         <div>
             <div className="flex justify-between items-center mb-10">
-                <span className="text-sm font-semibold text-orange-600">Step 1 of 3</span>
+                <span className="text-sm font-semibold text-orange-600">Step 1 of 4</span>
                 <span className="text-sm text-gray-400">Basic Configuration</span>
             </div>
 

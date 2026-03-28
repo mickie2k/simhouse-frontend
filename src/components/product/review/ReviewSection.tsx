@@ -30,12 +30,12 @@ export default function ReviewSection({
                 ))}
             </div>
 
-            <button
+            {/* <button
                 type="button"
                 className="mt-10 rounded-lg border border-slate-900 px-4 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-900 hover:text-white"
             >
                 Show all {totalReviews} reviews
-            </button>
+            </button> */}
         </section>
     );
 }
