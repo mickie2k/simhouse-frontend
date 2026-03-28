@@ -169,11 +169,17 @@ export default function Step3PricingAndPhotos({ formData, setFormData, back, sub
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-2">
-            <h2 className="text-2xl font-bold mb-6">Step 3: Photos & Pricing</h2>
+        <div>
+            <div className="flex justify-between items-center mb-10">
+                <span className="text-sm font-semibold text-orange-600">Step 3 of 4</span>
+                <span className="text-sm text-gray-400">Photos & Pricing</span>
+            </div>
+
+            <h2 className="text-3xl font-bold mb-3">Photos & Pricing</h2>
+            <p className="text-gray-500 mb-10">Upload photos of your simulator and set the hourly rental rate.</p>
 
             {/* Image upload boxes */}
-            <div className="mb-6">
+            <div className="mb-8">
                 <label className="block text-sm font-medium text-gray-700 mb-4">Cover Photos (Upload at least 1)</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[0, 1, 2].map((index) => (
@@ -246,7 +252,7 @@ export default function Step3PricingAndPhotos({ formData, setFormData, back, sub
             </div>
 
             {/* Price input field */}
-            <div className="mb-6">
+            <div className="mb-8">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Price per Hour (THB) <span className="text-red-500">*</span>
                 </label>
@@ -264,18 +270,17 @@ export default function Step3PricingAndPhotos({ formData, setFormData, back, sub
             </div>
 
             {/* Navigation buttons */}
-            <div className="flex justify-between items-center mt-10 pt-4 border-t border-gray-200">
+            <div className="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center">
                 <button
                     onClick={back}
-                    disabled={isSubmitting}
-                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-gray-800 border border-gray-300 hover:bg-gray-50 transition"
                 >
                     Back
                 </button>
                 <button
                     onClick={handlePublish}
-                    disabled={isSubmitting || uploadedImages.length === 0}
-                    className={`px-6 py-2 rounded-lg text-white font-medium transition ${isSubmitting || uploadedImages.length === 0
+                    disabled={uploadedImages.length === 0}
+                    className={`px-10 py-2.5 rounded-lg text-sm font-semibold text-white transition ${uploadedImages.length === 0
                         ? 'bg-orange-400 cursor-not-allowed opacity-50'
                         : 'bg-orange-600 hover:bg-orange-700'
                         }`}

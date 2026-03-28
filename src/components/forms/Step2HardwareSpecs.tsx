@@ -88,7 +88,7 @@ export default function Step2HardwareSpecs({ formData, setFormData, next, back }
         <div>
             {/* Status bar at the top */}
             <div className="flex justify-between items-center mb-10">
-                <span className="text-sm font-semibold text-orange-600">Step 2 of 3</span>
+                <span className="text-sm font-semibold text-orange-600">Step 2 of 4</span>
                 <span className="text-sm text-gray-400">Hardware Specifications</span>
             </div>
 
