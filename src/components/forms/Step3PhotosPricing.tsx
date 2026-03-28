@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from 'react';
 import { toast } from 'sonner';
+import { axiosInstance, axiosJWTInstance } from '@/lib/http';
 
 interface UploadedImage {
     file: File;
@@ -8,21 +9,11 @@ interface UploadedImage {
     objectKey?: string;
 }
 
-interface Step3Props {
-    formData: any;
-    setFormData: (data: any) => void;
-    back: () => void;
-    next: () => void;
-}
-
-export default function Step3PricingAndPhotos({
-    formData,
-    setFormData,
-    back,
-    next,
-}: Step3Props) {
+export default function Step3PricingAndPhotos({ formData, setFormData, back, submit }: any) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
     const fileInputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+    const [uploadProgress, setUploadProgress] = useState<{ [key: number]: number }>({});
     const [priceError, setPriceError] = useState<string | undefined>();
 
     const handleFileSelect = (index: number, file: File) => {
@@ -55,7 +46,41 @@ export default function Step3PricingAndPhotos({
         setUploadedImages(newImages);
     };
 
-    const handlePublish = () => {
+    const uploadImageToS3 = async (file: File, simId: number, imageIndex: number): Promise<string> => {
+        try {
+            // Determine content type
+            const contentType = (file.type === 'image/jpeg' ? 'image/jpeg' : file.type === 'image/png' ? 'image/png' : 'image/webp') as 'image/jpeg' | 'image/png' | 'image/webp';
+
+            // Get presigned URL
+            const presignedResponse = await axiosJWTInstance.post(
+                `/host/simulator/${simId}/image-upload`,
+                { contentType }
+            );
+
+            const { uploadUrl, objectKey } = presignedResponse.data;
+
+            // Upload to S3
+            const uploadResponse = await axiosInstance.put(uploadUrl, file, {
+                headers: {
+                    'Content-Type': contentType,
+                },
+            });
+
+            console.log(uploadResponse)
+
+            if (uploadResponse.status !== 200) {
+                throw new Error(`S3 upload failed: ${uploadResponse.statusText}`);
+            }
+
+            setUploadProgress(prev => ({ ...prev, [imageIndex]: 100 }));
+            return objectKey;
+        } catch (error) {
+            console.error(`Error uploading image ${imageIndex + 1}:`, error);
+            throw error;
+        }
+    };
+
+    const handlePublish = async () => {
         // Validation
         if (!formData.price || parseFloat(formData.price) <= 0) {
             setPriceError('Price per hour is required and must be greater than 0.');
@@ -63,7 +88,7 @@ export default function Step3PricingAndPhotos({
         }
         setPriceError(undefined);
 
-        if (!formData.name || !formData.description) {
+        if (!formData.simulatorName || !formData.description) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -73,25 +98,82 @@ export default function Step3PricingAndPhotos({
             return;
         }
 
-        // Store uploaded images in formData for Step 4
-        setFormData((prev: any) => ({ ...prev, uploadedImages }));
+        setIsSubmitting(true);
 
-        // Move to next step (Schedule Template configuration)
-        next();
+        try {
+            // Step 1: Create simulator
+            const payload = {
+                simlistname: formData.simulatorName,
+                listdescription: formData.description,
+                priceperhour: parseFloat(formData.price),
+                addressdetail: formData.location || 'Not specified',
+                latitude: formData.latitude || 13.73569,
+                longitude: formData.longitude || 100.565727,
+                simtypeid: formData.simtypeid || [1],
+                modid: formData.modid || 2,
+                cityId: formData.cityId || 106448,
+            };
+
+            console.log("Creating simulator with data:", payload);
+            const createResponse = await axiosJWTInstance.post('/host/simulator', payload);
+            const simId = createResponse.data.simid;
+
+            if (!simId) {
+                throw new Error('Failed to get simulator ID from response');
+            }
+
+            toast.success(`Simulator created with ID: ${simId}`);
+            console.log("Simulator created:", simId);
+
+            // Step 2 & 3: Upload images to S3 and collect object keys
+            const imageUpdates: { [key: string]: string } = {};
+            const imageKeys = ['firstImageKey', 'secondImageKey', 'thirdImageKey'];
+
+            for (let i = 0; i < uploadedImages.length; i++) {
+                if (uploadedImages[i]) {
+                    try {
+                        setUploadProgress(prev => ({ ...prev, [i]: 50 }));
+                        const objectKey = await uploadImageToS3(uploadedImages[i]!.file, simId, i);
+                        imageUpdates[imageKeys[i]] = objectKey;
+                        console.log(`Image ${i + 1} uploaded with key:`, objectKey);
+                        toast.success(`Image ${i + 1} uploaded successfully`);
+                    } catch (error) {
+                        console.error(`Failed to upload image ${i + 1}:`, error);
+                        toast.error(`Failed to upload image ${i + 1}`);
+                    }
+                }
+            }
+
+            // Step 4: Confirm simulator images (validates S3 keys and saves CDN URLs)
+            if (Object.keys(imageUpdates).length > 0) {
+                console.log("Confirming simulator images with keys:", imageUpdates);
+                const updateResponse = await axiosJWTInstance.patch(
+                    `/host/simulator/${simId}/images/confirm`,
+                    imageUpdates
+                );
+                console.log("Simulator updated with images:", updateResponse.data);
+                toast.success("Simulator images updated successfully! 🎉");
+            }
+
+            if (submit) {
+                submit();
+            }
+        } catch (error: any) {
+            console.error("Error in simulator creation workflow:", error);
+            const errorMessage = error.response?.data?.message || error.message || "Failed to create simulator";
+            toast.error(`Error: ${errorMessage}`);
+        } finally {
+            setIsSubmitting(false);
+            setUploadProgress({});
+        }
     };
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-10">
-                <span className="text-sm font-semibold text-orange-600">Step 3 of 4</span>
-                <span className="text-sm text-gray-400">Photos & Pricing</span>
-            </div>
-
-            <h2 className="text-3xl font-bold mb-3">Photos & Pricing</h2>
-            <p className="text-gray-500 mb-10">Upload photos of your simulator and set the hourly rental rate.</p>
+        <div className="max-w-2xl mx-auto p-2">
+            <h2 className="text-2xl font-bold mb-6">Step 3: Photos & Pricing</h2>
 
             {/* Image upload boxes */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-4">Cover Photos (Upload at least 1)</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {[0, 1, 2].map((index) => (
@@ -117,6 +199,26 @@ export default function Step3PricingAndPhotos({
                                             alt={`Preview ${index + 1}`}
                                             className="w-full h-full object-cover rounded"
                                         />
+                                        {uploadProgress[index] !== undefined && uploadProgress[index] < 100 && (
+                                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
+                                                <div className="text-white text-center">
+                                                    <div className="text-sm font-medium mb-2">Uploading...</div>
+                                                    <div className="w-24 h-1 bg-gray-300 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-orange-500 transition-all"
+                                                            style={{ width: `${uploadProgress[index]}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {uploadProgress[index] === 100 && (
+                                            <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        )}
                                         <button
                                             type="button"
                                             onClick={(e) => {
@@ -144,7 +246,7 @@ export default function Step3PricingAndPhotos({
             </div>
 
             {/* Price input field */}
-            <div className="mb-8">
+            <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Price per Hour (THB) <span className="text-red-500">*</span>
                 </label>
@@ -162,22 +264,23 @@ export default function Step3PricingAndPhotos({
             </div>
 
             {/* Navigation buttons */}
-            <div className="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center">
+            <div className="flex justify-between items-center mt-10 pt-4 border-t border-gray-200">
                 <button
                     onClick={back}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-gray-800 border border-gray-300 hover:bg-gray-50 transition"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition disabled:opacity-50"
                 >
                     Back
                 </button>
                 <button
                     onClick={handlePublish}
-                    disabled={uploadedImages.length === 0}
-                    className={`px-10 py-2.5 rounded-lg text-sm font-semibold text-white transition ${uploadedImages.length === 0
+                    disabled={isSubmitting || uploadedImages.length === 0}
+                    className={`px-6 py-2 rounded-lg text-white font-medium transition ${isSubmitting || uploadedImages.length === 0
                         ? 'bg-orange-400 cursor-not-allowed opacity-50'
                         : 'bg-orange-600 hover:bg-orange-700'
                         }`}
                 >
-                    Continue
+                    {isSubmitting ? 'Publishing...' : 'Finish & Publish'}
                 </button>
             </div>
         </div>

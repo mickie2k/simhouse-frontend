@@ -140,7 +140,7 @@ export default function BookingsManagementPage() {
   };
 
   return (
-    <div className="h-full bg-white text-gray-900 font-sans">
+    <div className="h-full bg-white text-gray-900">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -244,22 +244,11 @@ export default function BookingsManagementPage() {
                         {getStatusBadge(booking.status)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end items-center gap-2">
-                        {booking.status.toUpperCase() === 'PENDING' ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
 
-                              console.log('Confirming booking:', booking.id);
-                            }}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-1.5 rounded-md transition text-xs font-semibold"
-                          >
-                            Confirm
-                          </button>
-                        ) : (
-                          <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
-                            Details
-                          </button>
-                        )}
+                        <button className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-md transition text-xs font-semibold">
+                          Details
+                        </button>
+
                         <button
                           onClick={(e) => e.stopPropagation()}
                           className="text-gray-400 hover:text-gray-600 ml-2"

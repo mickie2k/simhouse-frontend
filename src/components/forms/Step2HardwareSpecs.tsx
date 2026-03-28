@@ -20,106 +20,61 @@ interface Model {
     brand: Brand;
 }
 
-interface Pedal {
-    id: number;
-    modelName: string;
-    brandId: number;
-}
-
-interface SimulatorType {
-    id: number;
-    typeName: string;
-}
-
 export default function Step2HardwareSpecs({ formData, setFormData, next, back }: Step2Props) {
-    const [errors, setErrors] = useState<{ platform?: string; wheelBaseBrandId?: string; wheelBaseModelId?: string; pedalBrandId?: string; pedalModelId?: string; screenSetup?: string; simtypeid?: string }>({});
+    const [errors, setErrors] = useState<{ platform?: string; brand?: string; wheelBase?: string; pedals?: string; screenSetup?: string; model?: string }>({});
     const [brands, setBrands] = useState<Brand[]>([]);
-    const [wheelBaseModels, setWheelBaseModels] = useState<Model[]>([]);
-    const [pedalBrands, setPedalBrands] = useState<Brand[]>([]);
-    const [pedals, setPedals] = useState<Pedal[]>([]);
-    const [simulatorTypes, setSimulatorTypes] = useState<SimulatorType[]>([]);
+    const [models, setModels] = useState<Model[]>([]);
     const [loadingBrands, setLoadingBrands] = useState(true);
-    const [loadingWheelBaseModels, setLoadingWheelBaseModels] = useState(false);
-    const [loadingPedals, setLoadingPedals] = useState(false);
-    const [loadingTypes, setLoadingTypes] = useState(true);
+    const [loadingModels, setLoadingModels] = useState(false);
 
     useEffect(() => {
-        // Fetch brands, pedal brands, and simulator types on component mount
-        const fetchData = async () => {
+        // Fetch brands on component mount
+        const fetchBrands = async () => {
             try {
                 setLoadingBrands(true);
-                setLoadingTypes(true);
-                const [brandsRes, typesRes] = await Promise.all([
-                    axiosInstance.get('/simulator/brands/list'),
-                    axiosInstance.get('/simulator/types/list'),
-                ]);
-                setBrands(brandsRes.data || []);
-                setPedalBrands(brandsRes.data || []);
-                setSimulatorTypes(typesRes.data || []);
+                const response = await axiosInstance.get('/simulator/brands/list');
+                setBrands(response.data || []);
             } catch (error) {
-                console.error('Failed to fetch data:', error);
-                setErrors(prev => ({ ...prev, wheelBaseBrandId: 'Failed to load brands' }));
+                console.error('Failed to fetch brands:', error);
+                setErrors(prev => ({ ...prev, brand: 'Failed to load brands' }));
             } finally {
                 setLoadingBrands(false);
-                setLoadingTypes(false);
             }
         };
-        fetchData();
+        fetchBrands();
     }, []);
 
-    // Fetch wheel base models when brand is selected
+    // Fetch models when brand is selected
     useEffect(() => {
-        const fetchWheelBaseModels = async () => {
-            if (!formData.wheelBaseBrandId) {
-                setWheelBaseModels([]);
+        const fetchModels = async () => {
+            if (!formData.brandId) {
+                setModels([]);
                 return;
             }
             try {
-                setLoadingWheelBaseModels(true);
-                const response = await axiosInstance.get('/simulator/models/list');
-                const filtered = (response.data || []).filter((m: Model) => m.brandId === parseInt(formData.wheelBaseBrandId));
-                setWheelBaseModels(filtered);
+                setLoadingModels(true);
+                const response = await axiosInstance.get('/simulator/models/list', {
+                    params: { brandId: formData.brandId }
+                });
+                setModels(response.data || []);
             } catch (error) {
                 console.error('Failed to fetch models:', error);
-                setErrors(prev => ({ ...prev, wheelBaseModelId: 'Failed to load models' }));
+                setErrors(prev => ({ ...prev, model: 'Failed to load models' }));
             } finally {
-                setLoadingWheelBaseModels(false);
+                setLoadingModels(false);
             }
         };
-        fetchWheelBaseModels();
-    }, [formData.wheelBaseBrandId]);
-
-    // Fetch pedals when pedal brand is selected
-    useEffect(() => {
-        const fetchPedals = async () => {
-            if (!formData.pedalBrandId) {
-                setPedals([]);
-                return;
-            }
-            try {
-                setLoadingPedals(true);
-                const response = await axiosInstance.get('/simulator/pedals/list');
-                const filtered = (response.data || []).filter((p: Pedal) => p.brandId === parseInt(formData.pedalBrandId));
-                setPedals(filtered);
-            } catch (error) {
-                console.error('Failed to fetch pedals:', error);
-                setErrors(prev => ({ ...prev, pedalModelId: 'Failed to load pedals' }));
-            } finally {
-                setLoadingPedals(false);
-            }
-        };
-        fetchPedals();
-    }, [formData.pedalBrandId]);
+        fetchModels();
+    }, [formData.brandId]);
 
     const handleNext = () => {
         const newErrors: typeof errors = {};
         if (!formData.platform) newErrors.platform = 'Platform is required.';
-        if (!formData.wheelBaseBrandId) newErrors.wheelBaseBrandId = 'Wheel base brand is required.';
-        if (!formData.wheelBaseModelId) newErrors.wheelBaseModelId = 'Wheel base model is required.';
-        if (!formData.pedalBrandId) newErrors.pedalBrandId = 'Pedal brand is required.';
-        if (!formData.pedalModelId) newErrors.pedalModelId = 'Pedal model is required.';
+        if (!formData.brandId) newErrors.brand = 'Brand is required.';
+        if (!formData.wheelBase?.trim()) newErrors.wheelBase = 'Wheel base is required.';
+        if (!formData.pedals?.trim()) newErrors.pedals = 'Pedals are required.';
         if (!formData.screenSetup) newErrors.screenSetup = 'Screen setup is required.';
-        if (!formData.simtypeid || formData.simtypeid.length === 0) newErrors.simtypeid = 'At least one simulator type is required.';
+        if (!formData.modId) newErrors.model = 'Model is required.';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -133,7 +88,7 @@ export default function Step2HardwareSpecs({ formData, setFormData, next, back }
         <div>
             {/* Status bar at the top */}
             <div className="flex justify-between items-center mb-10">
-                <span className="text-sm font-semibold text-orange-600">Step 2 of 4</span>
+                <span className="text-sm font-semibold text-orange-600">Step 2 of 3</span>
                 <span className="text-sm text-gray-400">Hardware Specifications</span>
             </div>
 
@@ -141,187 +96,129 @@ export default function Step2HardwareSpecs({ formData, setFormData, next, back }
             <p className="text-gray-500 mb-10">Tell us about the equipment included in your setup.</p>
 
             {/* Data entry form */}
-            <form className="space-y-8">
-                {/* Simulator Type Section */}
-                <div>
-                    <h4 className="text-sm font-bold text-gray-700 mb-4">Simulator Type</h4>
-                    {loadingTypes ? (
-                        <div className="text-sm text-gray-500">Loading simulator types...</div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {simulatorTypes.map((type) => (
-                                <label
-                                    key={type.id}
-                                    className="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-orange-300 cursor-pointer transition"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={(formData.simtypeid || []).includes(type.id)}
-                                        onChange={(e) => {
-                                            const newTypes = e.target.checked
-                                                ? [...(formData.simtypeid || []), type.id]
-                                                : (formData.simtypeid || []).filter((id: number) => id !== type.id);
-                                            setFormData({ ...formData, simtypeid: newTypes });
-                                            if (errors.simtypeid) setErrors(prev => ({ ...prev, simtypeid: undefined }));
-                                        }}
-                                        className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500 cursor-pointer"
-                                    />
-                                    <div className="ml-3">
-                                        <p className="font-medium text-gray-700">{type.typeName}</p>
-                                    </div>
-                                </label>
+            <form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Platform <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={formData.platform || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, platform: e.target.value });
+                                if (errors.platform) setErrors(prev => ({ ...prev, platform: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.platform ? 'border-red-500' : 'border-gray-300'}`}
+                        >
+                            <option value="">Select platform...</option>
+                            <option value="PC">PC</option>
+                            <option value="PS5">PlayStation 5</option>
+                            <option value="Xbox">Xbox Series X/S</option>
+                        </select>
+                        {errors.platform && <p className="mt-1 text-xs text-red-500">{errors.platform}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Brand <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={formData.brandId || ''}
+                            onChange={(e) => {
+                                const brandId = e.target.value ? parseInt(e.target.value) : '';
+                                setFormData({ ...formData, brandId, modId: '' });
+                                if (errors.brand) setErrors(prev => ({ ...prev, brand: undefined }));
+                            }}
+                            disabled={loadingBrands}
+                            className={`w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100 ${errors.brand ? 'border-red-500' : 'border-gray-300'}`}
+                        >
+                            <option value="">{loadingBrands ? 'Loading brands...' : 'Select brand...'}</option>
+                            {brands.map((brand) => (
+                                <option key={brand.id} value={brand.id}>
+                                    {brand.brandName}
+                                </option>
                             ))}
-                        </div>
-                    )}
-                    {errors.simtypeid && <p className="mt-2 text-xs text-red-500">{errors.simtypeid}</p>}
-                </div>
-
-                {/* Platform Section */}
-                <div>
-                    <h4 className="text-sm font-bold text-gray-700 mb-4">Platform</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[
-                            { id: 1, name: 'PC', desc: 'Windows / Linux' },
-                            { id: 2, name: 'PlayStation', desc: 'Console Ready' },
-                            { id: 3, name: 'Xbox Series', desc: 'Support' },
-                        ].map((option) => (
-                            <button
-                                key={option.id}
-                                type="button"
-                                onClick={() => {
-                                    setFormData({ ...formData, platform: option.id });
-                                    if (errors.platform) setErrors(prev => ({ ...prev, platform: undefined }));
-                                }}
-                                className={`p-4 rounded-2xl border-2 transition ${formData.platform === option.id
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200 bg-gray-50 hover:border-orange-300'
-                                    }`}
-                            >
-                                <div className="text-center">
-                                    <p className="font-semibold text-gray-900">{option.name}</p>
-                                    <p className="text-xs text-gray-500">{option.desc}</p>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                    {errors.platform && <p className="mt-2 text-xs text-red-500">{errors.platform}</p>}
-                </div>
-
-                {/* Wheel Base Section */}
-                <div>
-                    <h4 className="text-sm font-bold text-gray-700 mb-4">Wheel Base</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-2">BRAND</label>
-                            <select
-                                value={formData.wheelBaseBrandId || ''}
-                                onChange={(e) => {
-                                    const brandId = e.target.value ? parseInt(e.target.value) : '';
-                                    setFormData({ ...formData, wheelBaseBrandId: brandId, wheelBaseModelId: '' });
-                                    if (errors.wheelBaseBrandId) setErrors(prev => ({ ...prev, wheelBaseBrandId: undefined }));
-                                }}
-                                disabled={loadingBrands}
-                                className={`w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm disabled:bg-gray-100 ${errors.wheelBaseBrandId ? 'border-red-500' : 'border-gray-200'}`}
-                            >
-                                <option value="">{loadingBrands ? 'Loading brands...' : 'Select brand...'}</option>
-                                {brands.map((brand) => (
-                                    <option key={brand.id} value={brand.id}>{brand.brandName}</option>
-                                ))}
-                            </select>
-                            {errors.wheelBaseBrandId && <p className="mt-1 text-xs text-red-500">{errors.wheelBaseBrandId}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-2">MODEL</label>
-                            <select
-                                value={formData.wheelBaseModelId || ''}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, wheelBaseModelId: e.target.value ? parseInt(e.target.value) : '' });
-                                    if (errors.wheelBaseModelId) setErrors(prev => ({ ...prev, wheelBaseModelId: undefined }));
-                                }}
-                                disabled={!formData.wheelBaseBrandId || loadingWheelBaseModels}
-                                className={`w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm disabled:bg-gray-100 ${errors.wheelBaseModelId ? 'border-red-500' : 'border-gray-200'}`}
-                            >
-                                <option value="">{loadingWheelBaseModels ? 'Loading models...' : !formData.wheelBaseBrandId ? 'Select brand first...' : 'Select model...'}</option>
-                                {wheelBaseModels.map((model) => (
-                                    <option key={model.id} value={model.id}>{model.modelName}</option>
-                                ))}
-                            </select>
-                            {errors.wheelBaseModelId && <p className="mt-1 text-xs text-red-500">{errors.wheelBaseModelId}</p>}
-                        </div>
+                        </select>
+                        {errors.brand && <p className="mt-1 text-xs text-red-500">{errors.brand}</p>}
                     </div>
                 </div>
 
-                {/* Pedals Section */}
-                <div>
-                    <h4 className="text-sm font-bold text-gray-700 mb-4">Pedals</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-2">BRAND</label>
-                            <select
-                                value={formData.pedalBrandId || ''}
-                                onChange={(e) => {
-                                    const brandId = e.target.value ? parseInt(e.target.value) : '';
-                                    setFormData({ ...formData, pedalBrandId: brandId, pedalModelId: '' });
-                                    if (errors.pedalBrandId) setErrors(prev => ({ ...prev, pedalBrandId: undefined }));
-                                }}
-                                disabled={loadingBrands}
-                                className={`w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm disabled:bg-gray-100 ${errors.pedalBrandId ? 'border-red-500' : 'border-gray-200'}`}
-                            >
-                                <option value="">{loadingBrands ? 'Loading brands...' : 'Select brand...'}</option>
-                                {pedalBrands.map((brand) => (
-                                    <option key={brand.id} value={brand.id}>{brand.brandName}</option>
-                                ))}
-                            </select>
-                            {errors.pedalBrandId && <p className="mt-1 text-xs text-red-500">{errors.pedalBrandId}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-2">MODEL</label>
-                            <select
-                                value={formData.pedalModelId || ''}
-                                onChange={(e) => {
-                                    setFormData({ ...formData, pedalModelId: e.target.value ? parseInt(e.target.value) : '' });
-                                    if (errors.pedalModelId) setErrors(prev => ({ ...prev, pedalModelId: undefined }));
-                                }}
-                                disabled={!formData.pedalBrandId || loadingPedals}
-                                className={`w-full p-3 bg-white border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition text-sm disabled:bg-gray-100 ${errors.pedalModelId ? 'border-red-500' : 'border-gray-200'}`}
-                            >
-                                <option value="">{loadingPedals ? 'Loading models...' : !formData.pedalBrandId ? 'Select brand first...' : 'Select model...'}</option>
-                                {pedals.map((pedal) => (
-                                    <option key={pedal.id} value={pedal.id}>{pedal.modelName}</option>
-                                ))}
-                            </select>
-                            {errors.pedalModelId && <p className="mt-1 text-xs text-red-500">{errors.pedalModelId}</p>}
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Model <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={formData.modId || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, modId: e.target.value ? parseInt(e.target.value) : '' });
+                                if (errors.model) setErrors(prev => ({ ...prev, model: undefined }));
+                            }}
+                            disabled={!formData.brandId || loadingModels}
+                            className={`w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-gray-100 ${errors.model ? 'border-red-500' : 'border-gray-300'}`}
+                        >
+                            <option value="">{loadingModels ? 'Loading models...' : !formData.brandId ? 'Select brand first...' : 'Select model...'}</option>
+                            {models.map((model) => (
+                                <option key={model.id} value={model.id}>
+                                    {model.modelName}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.model && <p className="mt-1 text-xs text-red-500">{errors.model}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Wheel Base <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.wheelBase || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, wheelBase: e.target.value });
+                                if (errors.wheelBase) setErrors(prev => ({ ...prev, wheelBase: undefined }));
+                            }}
+                            placeholder="e.g., Fanatec DD Pro (8Nm)"
+                            className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.wheelBase ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.wheelBase && <p className="mt-1 text-xs text-red-500">{errors.wheelBase}</p>}
                     </div>
                 </div>
 
-                {/* Screen Setup Section */}
-                <div>
-                    <h4 className="text-sm font-bold text-gray-700 mb-4">Screen Setup</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {[
-                            { id: 1, name: 'Single' },
-                            { id: 2, name: 'Triple' },
-                            { id: 3, name: 'Ultrawide' },
-                            { id: 4, name: 'VR Headset' },
-                        ].map((option) => (
-                            <button
-                                key={option.id}
-                                type="button"
-                                onClick={() => {
-                                    setFormData({ ...formData, screenSetup: option.id });
-                                    if (errors.screenSetup) setErrors(prev => ({ ...prev, screenSetup: undefined }));
-                                }}
-                                className={`p-4 rounded-2xl border-2 transition text-center ${formData.screenSetup === option.id
-                                    ? 'border-orange-500 bg-orange-50'
-                                    : 'border-gray-200 bg-gray-50 hover:border-orange-300'
-                                    }`}
-                            >
-                                <p className="font-semibold text-gray-900 text-sm">{option.name}</p>
-                            </button>
-                        ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Pedals <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.pedals || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, pedals: e.target.value });
+                                if (errors.pedals) setErrors(prev => ({ ...prev, pedals: undefined }));
+                            }}
+                            placeholder="e.g., Heusinkveld Sprint"
+                            className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.pedals ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.pedals && <p className="mt-1 text-xs text-red-500">{errors.pedals}</p>}
                     </div>
-                    {errors.screenSetup && <p className="mt-2 text-xs text-red-500">{errors.screenSetup}</p>}
+                    <div>
+                        <label className="block text-sm font-semibold mb-2">
+                            Screen Setup <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={formData.screenSetup || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, screenSetup: e.target.value });
+                                if (errors.screenSetup) setErrors(prev => ({ ...prev, screenSetup: undefined }));
+                            }}
+                            className={`w-full px-4 py-3 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 ${errors.screenSetup ? 'border-red-500' : 'border-gray-300'}`}
+                        >
+                            <option value="">Select screen setup...</option>
+                            <option value="Single">Single Monitor</option>
+                            <option value="Triple">Triple Monitors</option>
+                            <option value="VR">VR Headset</option>
+                        </select>
+                        {errors.screenSetup && <p className="mt-1 text-xs text-red-500">{errors.screenSetup}</p>}
+                    </div>
                 </div>
             </form>
 
