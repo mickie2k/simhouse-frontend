@@ -75,6 +75,12 @@ export default function HostBookingDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isConfirming, setIsConfirming] = useState(false);
     const [isCanceling, setIsCanceling] = useState(false);
+    const [reviewRating, setReviewRating] = useState<number>(0);
+    const [reviewComment, setReviewComment] = useState<string>('');
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [reviewSubmitted, setReviewSubmitted] = useState(false);
+    const [customerReviews, setCustomerReviews] = useState<any>(null);
+    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
     useEffect(() => {
         const fetchBookingDetail = async () => {
@@ -105,6 +111,29 @@ export default function HostBookingDetailPage() {
         }
     }, [bookingId, simId]);
 
+    // Fetch customer reviews
+    useEffect(() => {
+        const fetchCustomerReviews = async () => {
+            if (!booking) return;
+            try {
+                setIsLoadingReviews(true);
+                const { data } = await axiosJWTInstance.get(
+                    `/user/${booking.customerId}/reviews`
+                );
+                setCustomerReviews(data);
+            } catch (error) {
+                console.error('Failed to fetch customer reviews:', error);
+                // Don't show error toast for reviews - it's optional data
+            } finally {
+                setIsLoadingReviews(false);
+            }
+        };
+
+        if (booking) {
+            fetchCustomerReviews();
+        }
+    }, [booking]);
+
     const handleConfirmBooking = async () => {
         if (!booking) return;
         setIsConfirming(true);
@@ -132,6 +161,31 @@ export default function HostBookingDetailPage() {
             toast.error(error.response?.data?.message || 'Failed to cancel booking');
         } finally {
             setIsCanceling(false);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        if (!booking || reviewRating === 0) {
+            toast.error('Please select a rating');
+            return;
+        }
+
+        setIsSubmittingReview(true);
+        try {
+            await axiosJWTInstance.post(`/host/booking/${booking.id}/review`, {
+                bookingId: booking.id,
+                rating: reviewRating,
+                comment: reviewComment || undefined,
+            });
+            toast.success('Review submitted successfully');
+            setReviewSubmitted(true);
+            setReviewRating(0);
+            setReviewComment('');
+        } catch (error: any) {
+            console.error('Failed to submit review:', error);
+            toast.error(error.response?.data?.message || 'Failed to submit review');
+        } finally {
+            setIsSubmittingReview(false);
         }
     };
 
@@ -228,6 +282,88 @@ export default function HostBookingDetailPage() {
                                 </a>
                             )}
                         </div>
+
+                        {/* Customer Reviews/Ratings History */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-lg font-semibold">Customer History</h3>
+                            {isLoadingReviews ? (
+                                <div className="flex items-center justify-center py-4">
+                                    <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : customerReviews && customerReviews.totalReviews > 0 ? (
+                                <div className="space-y-4">
+                                    {/* Average Rating */}
+                                    <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-1">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                        key={star}
+                                                        className={`text-lg ${star <= Math.round(customerReviews.averageRating)
+                                                            ? 'text-yellow-400'
+                                                            : 'text-gray-300'
+                                                            }`}
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-1">
+                                                {customerReviews.averageRating} from {customerReviews.totalReviews} review{customerReviews.totalReviews > 1 ? 's' : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Reviews List */}
+                                    <div className="space-y-3 max-h-64 overflow-y-auto">
+                                        {customerReviews.reviews.map((review: any, index: number) => (
+                                            <div
+                                                key={index}
+                                                className="border border-gray-200 rounded-lg p-3 bg-gray-50"
+                                            >
+                                                <div className="flex items-start justify-between gap-2 mb-2">
+                                                    <div className="flex-1">
+                                                        <p className="text-xs font-semibold text-gray-700">
+                                                            {review.booking.simulator.host.firstName} {review.booking.simulator.host.lastName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {review.booking.simulator.simListName}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1 mb-2">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span
+                                                            key={star}
+                                                            className={`text-sm ${star <= review.rating
+                                                                ? 'text-yellow-400'
+                                                                : 'text-gray-300'
+                                                                }`}
+                                                        >
+                                                            ★
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                {review.comment && (
+                                                    <p className="text-xs text-gray-700 mb-2">
+                                                        {review.comment.length > 100
+                                                            ? review.comment.substring(0, 100) + '...'
+                                                            : review.comment}
+                                                    </p>
+                                                )}
+                                                <p className="text-xs text-gray-500">
+                                                    {new Date(review.booking.bookingDate).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    No reviews yet for this customer
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Right Column - Booking Details */}
@@ -302,8 +438,6 @@ export default function HostBookingDetailPage() {
                         </div>
 
                         <hr className="border-gray-200" />
-
-                        {/* Action Buttons */}
                         <div className="flex flex-col gap-3">
                             {booking.statusId === 1 || booking.bookingStatus.statusName.toUpperCase() === 'PENDING' ? (
                                 <>
@@ -341,6 +475,80 @@ export default function HostBookingDetailPage() {
                                 </button>
                             )}
                         </div>
+
+                        {/* Review Form - Show when booking is confirmed */}
+                        {(booking.statusId === 2 || booking.bookingStatus.statusName.toUpperCase() === 'CONFIRM') && !reviewSubmitted && (
+                            <>
+                                <hr className="border-gray-200" />
+                                <div className="flex flex-col gap-4">
+                                    <h3 className="text-lg font-semibold">Rate This Customer</h3>
+
+                                    {/* Star Rating */}
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-sm text-gray-600">Rating</p>
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={star}
+                                                    onClick={() => setReviewRating(star)}
+                                                    className={`text-3xl transition ${star <= reviewRating
+                                                        ? 'text-yellow-400'
+                                                        : 'text-gray-300 hover:text-yellow-200'
+                                                        }`}
+                                                >
+                                                    ★
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {reviewRating > 0 && (
+                                            <p className="text-sm text-gray-600">{reviewRating} out of 5 stars</p>
+                                        )}
+                                    </div>
+
+                                    {/* Comment Textarea */}
+                                    <div className="flex flex-col gap-2">
+                                        <label htmlFor="comment" className="text-sm text-gray-600">
+                                            Comment (Optional)
+                                        </label>
+                                        <textarea
+                                            id="comment"
+                                            value={reviewComment}
+                                            onChange={(e) =>
+                                                setReviewComment(e.target.value.slice(0, 1000))
+                                            }
+                                            placeholder="Share your experience with this customer..."
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                                            rows={4}
+                                        />
+                                        <p className="text-xs text-gray-500">
+                                            {reviewComment.length}/1000 characters
+                                        </p>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        onClick={handleSubmitReview}
+                                        disabled={isSubmittingReview || reviewRating === 0}
+                                        className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition"
+                                    >
+                                        {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Review Submitted Message */}
+                        {reviewSubmitted && (
+                            <>
+                                <hr className="border-gray-200" />
+                                <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <IoIosCheckmarkCircle className="text-green-500 text-xl flex-shrink-0" />
+                                    <span className="text-green-800 font-medium">
+                                        Thank you! Your review has been submitted.
+                                    </span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

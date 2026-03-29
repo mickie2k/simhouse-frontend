@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useRouter, useParams } from 'next/navigation';
 import { axiosJWTInstance } from '@/lib/http';
 import Link from 'next/link';
+import LocationPicker from '@/components/location-picker/LocationPicker';
+import ScheduleSlotManager from '@/components/host/ScheduleSlotManager';
 
 export default function EditSimulatorPage() {
   const router = useRouter();
@@ -20,6 +22,11 @@ export default function EditSimulatorPage() {
     simulatorName: '',
     description: '',
     location: '',
+    latitude: 13.73569,
+    longitude: 100.565727,
+    countryId: '',
+    stateId: '',
+    cityId: '',
     price: '',
     modId: '',
     platformId: '',
@@ -64,6 +71,7 @@ export default function EditSimulatorPage() {
     { id: 'photos', label: 'Photos' },
     { id: 'hardware', label: 'Hardware Space' },
     { id: 'pricing', label: 'Pricing & Availability' },
+    { id: 'schedule', label: 'Manage Slots' },
   ], []);
 
   useEffect(() => {
@@ -88,6 +96,11 @@ export default function EditSimulatorPage() {
           simulatorName: sim.simListName || '',
           description: sim.listDescription || '',
           location: sim.addressDetail || '',
+          latitude: typeof sim.latitude === 'number' ? sim.latitude : parseFloat(sim.latitude) || 13.73569,
+          longitude: typeof sim.longitude === 'number' ? sim.longitude : parseFloat(sim.longitude) || 100.565727,
+          countryId: (sim.countryId || '').toString(),
+          stateId: (sim.stateId || '').toString(),
+          cityId: (sim.cityId || '').toString(),
           price: (sim.pricePerHour || '').toString(),
           modId: (sim.modId || '').toString(),
           platformId: (sim.platformId || '').toString(),
@@ -127,7 +140,7 @@ export default function EditSimulatorPage() {
     };
 
     fetchOptions();
-  }, []);
+  }, [currentSimulator]);
 
   const scrollToSection = (id: string) => {
     setActiveSection(id);
@@ -260,11 +273,17 @@ export default function EditSimulatorPage() {
       const uploadedFileKeys = await uploadAllImages();
 
       // Step 2: Prepare payload with image file keys
+      const latValue = typeof formData.latitude === 'number' ? formData.latitude : parseFloat(String(formData.latitude)) || 13.73569;
+      const longValue = typeof formData.longitude === 'number' ? formData.longitude : parseFloat(String(formData.longitude)) || 100.565727;
+
       const payload: Record<string, any> = {
         simlistname: formData.simulatorName?.trim(),
         listdescription: formData.description?.trim() || '',
         priceperhour: parseFloat(formData.price),
         addressdetail: formData.location?.trim() || '',
+        latitude: latValue,
+        longitude: longValue,
+        cityId: formData.cityId ? parseInt(formData.cityId) : null,
         modId: formData.wheelBaseModelId ? parseInt(formData.wheelBaseModelId) : null,
         platformId: formData.platformId ? parseInt(formData.platformId) : null,
         pedalId: formData.pedalModelId ? parseInt(formData.pedalModelId) : null,
@@ -331,16 +350,16 @@ export default function EditSimulatorPage() {
           </nav>
 
           <div className="border-t border-gray-100 pt-6">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Listing Status</h3>
+            {/* <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Simulator Page</h3> */}
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-semibold text-gray-700">Status</span>
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">Active</span>
+                <span className="text-sm font-semibold text-gray-700">Viewing Simulator</span>
+
               </div>
               <p className="text-xs text-gray-500 mb-4">Your listing is visible to renters in your area.</p>
-              <button className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                Switch to Hidden
-              </button>
+              <Link href={`/product/${simulatorId}`} target='_blank' className="flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                Open Product Page
+              </Link>
             </div>
           </div>
         </div>
@@ -404,8 +423,30 @@ export default function EditSimulatorPage() {
                     type="text"
                     value={formData.location}
                     onChange={(e) => handleChange('location', e.target.value)}
+                    placeholder="e.g. Berlin Facility - Room 302 or coordinates from map"
                     className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
-                    placeholder="Location e.g. Sukhumvit 71..."
+                  />
+                </div>
+
+                {/* Location Picker Map */}
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                  <LocationPicker
+                    onLocationSelect={(location) => {
+                      setFormData({
+                        ...formData,
+                        location: location.address || `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+                        latitude: location.lat,
+                        longitude: location.lng,
+                        cityId: location.cityId?.toString() || '',
+                        stateId: location.stateId?.toString() || '',
+                        countryId: location.countryId?.toString() || '',
+                      });
+                    }}
+                    existingLat={typeof formData.latitude === 'number' ? formData.latitude : parseFloat(formData.latitude) || 13.73569}
+                    existingLng={typeof formData.longitude === 'number' ? formData.longitude : parseFloat(formData.longitude) || 100.565727}
+                    existingCountryId={parseInt(formData.countryId) || undefined}
+                    existingStateId={parseInt(formData.stateId) || undefined}
+                    existingCityId={parseInt(formData.cityId) || undefined}
                   />
                 </div>
               </div>
@@ -621,6 +662,19 @@ export default function EditSimulatorPage() {
                   {errors.price && <p className="text-red-500 text-sm mt-1.5">{errors.price}</p>}
                 </div>
 
+              </div>
+            </section>
+
+            <section id="schedule" className="scroll-mt-10">
+              <h3 className="text-2xl font-bold mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                <span className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm text-orange-600 font-bold">6</span>
+                Manage Schedule Slots
+              </h3>
+              <p className="text-gray-500 text-sm mb-6">Edit individual time slots, adjust prices, and control availability for specific dates.</p>
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ height: '600px' }}>
+                {simulatorId && currentSimulator && (
+                  <ScheduleSlotManager simulatorId={parseInt(simulatorId as string)} />
+                )}
               </div>
             </section>
 

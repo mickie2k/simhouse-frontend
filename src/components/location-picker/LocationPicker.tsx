@@ -27,16 +27,23 @@ interface LocationPickerProps {
         lng: number;
         address: string;
         countryId?: number;
+        stateId?: number;
         cityId?: number;
     }) => void;
     existingLat?: number;
     existingLng?: number;
+    existingCountryId?: number;
+    existingStateId?: number;
+    existingCityId?: number;
 }
 
 export default function LocationPicker({
     onLocationSelect,
     existingLat = 13.7563,
     existingLng = 100.5018,
+    existingCountryId,
+    existingStateId,
+    existingCityId,
 }: LocationPickerProps) {
     const { countries, getStates, getCities, isLoading: countriesLoading } = useLocation();
 
@@ -61,6 +68,54 @@ export default function LocationPicker({
     useEffect(() => {
         console.log('LocationPicker - Countries loaded:', countries);
     }, [countries]);
+
+    // Pre-populate country/state/city based on existing IDs
+    useEffect(() => {
+        const populateLocationFromIds = async () => {
+            if (existingCountryId && countries.length > 0) {
+                const country = countries.find((c) => c.id === existingCountryId);
+                if (country) {
+                    setSelectedCountry(country);
+
+                    // Fetch states for this country
+                    try {
+                        const fetchedStates = await getStates(country.id.toString());
+                        setStates(fetchedStates);
+
+                        // If we have an existing state, select it
+                        if (existingStateId && fetchedStates.length > 0) {
+                            const state = fetchedStates.find((s) => s.id === existingStateId);
+                            if (state) {
+                                setSelectedState(state);
+
+                                // Fetch cities for this state
+                                if (state.code) {
+                                    try {
+                                        const fetchedCities = await getCities(country.id.toString(), state.code);
+                                        setCities(fetchedCities);
+
+                                        // If we have an existing city, select it
+                                        if (existingCityId && fetchedCities.length > 0) {
+                                            const city = fetchedCities.find((c) => c.id === existingCityId);
+                                            if (city) {
+                                                setSelectedCity(city);
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.error("Failed to fetch cities:", error);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Failed to fetch states:", error);
+                    }
+                }
+            }
+        };
+
+        populateLocationFromIds();
+    }, [existingCountryId, existingStateId, existingCityId, countries]);
 
     const handleCountryChange = async (countryId: string) => {
         const id = parseInt(countryId, 10);
@@ -149,6 +204,7 @@ export default function LocationPicker({
                 lng: longitude,
                 address: finalAddress,
                 countryId: selectedCountry.id,
+                stateId: selectedState?.id,
                 cityId: selectedCity.id,
             });
             setLoading(false);
@@ -304,7 +360,7 @@ export default function LocationPicker({
                             type="button"
                             onClick={handleConfirm}
                             disabled={!selectedCountry || !selectedCity || loading}
-                            className="w-full px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-2.5 bg-black hover:bg-zinc-800 text-white text-sm font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Loading..." : "Confirm Location"}
                         </button>
