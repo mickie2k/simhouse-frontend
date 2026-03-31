@@ -21,6 +21,19 @@ interface BookingStatus {
   statusName: string;
 }
 
+interface ScheduleSlot {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  price: string;
+}
+
+interface BookingListItem {
+  scheduleId: number;
+  schedule: ScheduleSlot;
+}
+
 interface BookingResponse {
   id: number;
   bookingDate: string;
@@ -31,6 +44,7 @@ interface BookingResponse {
   bookingStatus: BookingStatus;
   customer: Customer;
   simulator: Simulator;
+  bookingList: BookingListItem[];
 }
 
 interface BookingTableData {
@@ -100,10 +114,33 @@ export default function BookingsManagementPage() {
           simId: raw.simId,
           customer: raw.customer?.username || 'Unknown',
           sim: raw.simulator?.simListName || 'Unknown Sim',
-          schedule: new Date(raw.bookingDate).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-          }),
-          duration: 'N/A',
+          schedule: (() => {
+            const firstSlot = raw.bookingList?.[0]?.schedule;
+            if (firstSlot) {
+              const date = new Date(firstSlot.date);
+              const startTime = new Date(firstSlot.startTime);
+              date.setHours(startTime.getUTCHours(), startTime.getUTCMinutes());
+              return date.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+              });
+            }
+            return new Date(raw.bookingDate).toLocaleDateString('en-US', {
+              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+          })(),
+          duration: (() => {
+            if (!raw.bookingList?.length) return 'N/A';
+            const totalMinutes = raw.bookingList.reduce((sum, item) => {
+              const start = new Date(item.schedule.startTime);
+              const end = new Date(item.schedule.endTime);
+              return sum + (end.getUTCHours() * 60 + end.getUTCMinutes()) - (start.getUTCHours() * 60 + start.getUTCMinutes());
+            }, 0);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return hours > 0 && minutes > 0
+              ? `${hours}h ${minutes}m`
+              : hours > 0 ? `${hours}h` : `${minutes}m`;
+          })(),
           price: parseFloat(raw.totalPrice) || 0,
           status: raw.bookingStatus?.statusName || 'PENDING'
         }));

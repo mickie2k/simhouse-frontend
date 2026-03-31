@@ -53,6 +53,13 @@ interface BookingStatus {
     statusName: string;
 }
 
+interface CustomerReview {
+    id: number;
+    rating: number;
+    comment?: string;
+    createdAt: string;
+}
+
 interface HostBookingDetail {
     id: number;
     bookingDate: string;
@@ -64,6 +71,7 @@ interface HostBookingDetail {
     bookingStatus: BookingStatus;
     customer: Customer;
     simulator: Simulator;
+    customerReviews: CustomerReview[];
 }
 
 export default function HostBookingDetailPage() {
@@ -94,6 +102,9 @@ export default function HostBookingDetailPage() {
                     );
                     console.log(data)
                     setBooking(data);
+                    if (data.customerReviews && data.customerReviews.length > 0) {
+                        setReviewSubmitted(true);
+                    }
                 } else {
                     toast.error('Booking not found');
                     setBooking(null);
@@ -537,15 +548,40 @@ export default function HostBookingDetailPage() {
                             </>
                         )}
 
-                        {/* Review Submitted Message */}
+                        {/* Review Submitted / Already Reviewed */}
                         {reviewSubmitted && (
                             <>
                                 <hr className="border-gray-200" />
-                                <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
-                                    <IoIosCheckmarkCircle className="text-green-500 text-xl flex-shrink-0" />
-                                    <span className="text-green-800 font-medium">
-                                        Thank you! Your review has been submitted.
-                                    </span>
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <IoIosCheckmarkCircle className="text-green-500 text-xl flex-shrink-0" />
+                                        <h3 className="text-lg font-semibold ">Review Complete</h3>
+                                    </div>
+                                    {(() => {
+                                        const review = booking.customerReviews?.[0];
+                                        if (!review) return null;
+                                        return (
+                                            <div className="bg-background border border-borderColor1 rounded-lg p-4 flex flex-col gap-2">
+                                                <div className="flex gap-1">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <span
+                                                            key={star}
+                                                            className={`text-lg ${star <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                                                        >
+                                                            ★
+                                                        </span>
+                                                    ))}
+                                                    <span className="text-sm text-gray-600 ml-1 self-center">{review.rating}/5</span>
+                                                </div>
+                                                {review.comment && (
+                                                    <p className="text-sm text-gray-700">{review.comment}</p>
+                                                )}
+                                                <p className="text-xs text-gray-500">
+                                                    Reviewed on {new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                </p>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </>
                         )}

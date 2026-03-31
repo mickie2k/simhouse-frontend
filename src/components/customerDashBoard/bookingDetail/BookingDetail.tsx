@@ -231,6 +231,7 @@ export default function BookingDetailBody({
 						<ReviewForm
 							bookingId={booking.id}
 							alreadyReviewed={!!booking.review}
+							existingReview={booking.review}
 						/>
 					</>
 				)}

@@ -7,7 +7,7 @@ export const getCachedCountries = unstable_cache(
     async () => {
         try {
             const response = await fetch(`${BACKEND_URL}location/countries`, {
-                next: { revalidate: 3600 }, // Revalidate every hour
+                next: { revalidate: 1 }, // Revalidate every hour
             });
 
             if (!response.ok) {

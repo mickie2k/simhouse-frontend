@@ -162,19 +162,13 @@ export default function LocationPicker({
     };
 
     const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
-        if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-            return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-        }
-
         try {
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-            );
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                return data.results[0].formatted_address;
+            const response = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`);
+            if (!response.ok) {
+                return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             }
-            return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            const data = await response.json();
+            return data.address ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         } catch (error) {
             console.error("Reverse geocoding error:", error);
             return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { axiosJWTInstance } from "@/lib/http";
 import { toast } from "sonner";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import { BookingReview } from "@/types";
 
 const REVIEW_TYPES = [
     { typeId: 1, typeName: "Cleanliness" },
@@ -50,9 +51,11 @@ function StarRating({
 export default function ReviewForm({
     bookingId,
     alreadyReviewed = false,
+    existingReview,
 }: {
     bookingId: number;
     alreadyReviewed?: boolean;
+    existingReview?: BookingReview | null;
 }) {
     const [comment, setComment] = useState("");
     const [ratings, setRatings] = useState<Record<number, number>>(
@@ -104,14 +107,41 @@ export default function ReviewForm({
 
     if (submitted) {
         return (
-            <div className="col-span-3 border border-green-200 bg-green-50 rounded-2xl p-8 text-center flex flex-col items-center gap-3">
-                <IoIosCheckmarkCircle size={48} color="#16a34a" />
-                <h2 className="text-xl font-medium text-green-700">
-                    Thank you for your review!
-                </h2>
-                <p className="text-sm text-secondText">
-                    Your feedback helps improve the experience for everyone.
-                </p>
+            <div className="col-span-3 border border-green-200 bg-green-50 rounded-2xl p-8 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                    <IoIosCheckmarkCircle size={32} color="#16a34a" />
+                    <h2 className="text-xl font-medium text-green-700">Review Complete</h2>
+                </div>
+                {existingReview && (
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                            <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        className={`text-2xl leading-none ${star <= existingReview.overallRating
+                                            ? "text-yellow-400"
+                                            : "text-neutral-300"
+                                            }`}
+                                    >
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                            <span className="text-base font-semibold text-neutral-700">
+                                {existingReview.overallRating}/5
+                            </span>
+                        </div>
+                        {existingReview.comment && (
+                            <p className="text-sm text-neutral-700">{existingReview.comment}</p>
+                        )}
+                    </div>
+                )}
+                {!existingReview && (
+                    <p className="text-sm text-secondText">
+                        Your feedback helps improve the experience for everyone.
+                    </p>
+                )}
             </div>
         );
     }
