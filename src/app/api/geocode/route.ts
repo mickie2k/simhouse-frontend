@@ -22,9 +22,17 @@ export async function GET(request: Request) {
 
     const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`,
+        {
+            headers: {
+                Referer:
+                    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:8080",
+            },
+        },
     );
 
     const data = await response.json();
+
+    console.log(`Geocoding response for (${lat}, ${lng}):`, data);
 
     if (data.results && data.results.length > 0) {
         return NextResponse.json({
