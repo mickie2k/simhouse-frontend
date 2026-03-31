@@ -88,18 +88,17 @@ export default function Step4ScheduleTemplate({
     };
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-10">
-                <span className="text-sm font-semibold text-orange-600">Step 4 of 4</span>
-                <span className="text-sm text-gray-400">Schedule & Availability</span>
-            </div>
-
-            <h2 className="text-3xl font-bold mb-3">Schedule & Availability</h2>
-            <p className="text-gray-500 mb-10">Set recurring availability for your simulator. You can add more schedules later if needed.</p>
+        <div className="max-w-2xl mx-auto p-2">
+            <h2 className="text-2xl font-bold mb-2">Step 4: Schedule & Availability</h2>
+            <p className="text-gray-600 text-sm mb-6">
+                Set recurring availability for your simulator. You can add more schedules later if needed.
+            </p>
 
             {/* Days of Week Selection */}
             <div className="mb-8">
-                <h4 className="text-sm font-bold text-gray-700 mb-4">Available Days</h4>
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                    Available Days
+                </label>
                 <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
                     {DAY_NAMES.map((day, index) => (
                         <button
@@ -124,7 +123,9 @@ export default function Step4ScheduleTemplate({
 
             {/* Time Range Selection */}
             <div className="mb-8">
-                <h4 className="text-sm font-bold text-gray-700 mb-4">Operating Hours</h4>
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                    Operating Hours
+                </label>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     {/* Start Time */}
                     <div>
@@ -187,12 +188,12 @@ export default function Step4ScheduleTemplate({
             {/* Hourly Time Slots Preview */}
             {selectedDays.length > 0 && startTime && endTime && startTime < endTime && (
                 <div className="mb-8">
-                    <h4 className="text-sm font-bold text-gray-700 mb-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                         Available Time Slots{' '}
                         <span className="text-xs text-gray-600 font-normal">
                             (1-hour increments)
                         </span>
-                    </h4>
+                    </label>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 max-h-64 overflow-y-auto p-2 bg-gray-50 rounded-lg">
                         {HOURS.map(hour => {
                             const hourNum = parseInt(hour);
@@ -214,25 +215,27 @@ export default function Step4ScheduleTemplate({
             )}
 
             {/* Navigation Buttons */}
-            <div className="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center">
+            <div className="flex justify-between items-center mt-10 pt-4 border-t border-gray-200">
                 <button
                     onClick={back}
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-gray-800 border border-gray-300 hover:bg-gray-50 transition disabled:opacity-50"
+                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition disabled:opacity-50"
                 >
                     Back
                 </button>
 
-                <button
-                    onClick={handleSaveAndExit}
-                    disabled={isSubmitting || selectedDays.length === 0}
-                    className={`px-10 py-2.5 rounded-lg text-sm font-semibold text-white transition ${isSubmitting || selectedDays.length === 0
-                        ? 'bg-orange-400 cursor-not-allowed opacity-50'
-                        : 'bg-orange-600 hover:bg-orange-700'
-                        }`}
-                >
-                    {isSubmitting ? 'Saving...' : 'Continue'}
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={handleSaveAndExit}
+                        disabled={isSubmitting || selectedDays.length === 0}
+                        className={`px-6 py-2 rounded-lg text-white font-medium transition ${isSubmitting || selectedDays.length === 0
+                            ? 'bg-orange-400 cursor-not-allowed opacity-50'
+                            : 'bg-orange-600 hover:bg-orange-700'
+                            }`}
+                    >
+                        {isSubmitting ? 'Saving...' : 'Save & Exit'}
+                    </button>
+                </div>
             </div>
         </div>
     );
