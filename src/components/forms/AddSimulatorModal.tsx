@@ -3,10 +3,10 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { axiosInstance, axiosJWTInstance } from '@/lib/http';
-import Step1GeneralInfo from './forms/Step1GeneralInfo';
-import Step2HardwareSpecs from './forms/Step2HardwareSpecs';
-import Step3PhotosPricing from './forms/Step3PhotosPricing';
-import Step4ScheduleTemplate from './forms/Step4ScheduleTemplate';
+import Step1GeneralInfo from './Step1GeneralInfo';
+import Step2HardwareSpecs from './Step2HardwareSpecs';
+import Step3PhotosPricing from './Step3PhotosPricing';
+import Step4ScheduleTemplate from './Step4ScheduleTemplate';
 
 interface UploadedImage {
   file: File;
@@ -135,7 +135,7 @@ export default function AddSimulatorModal({ isOpen, onClose, onSuccess }: AddSim
         throw new Error('Failed to get simulator ID from response');
       }
 
-      toast.success(`Simulator created with ID: ${simId}`);
+      // toast.success(`Simulator created with ID: ${simId}`);
       console.log("Simulator created:", simId);
 
       // Step 2: Upload images to S3 and collect object keys
@@ -149,7 +149,7 @@ export default function AddSimulatorModal({ isOpen, onClose, onSuccess }: AddSim
             const objectKey = await uploadImageToS3(uploadedImages[i]!.file, simId, i);
             imageUpdates[imageKeys[i]] = objectKey;
             console.log(`Image ${i + 1} uploaded with key:`, objectKey);
-            toast.success(`Image ${i + 1} uploaded successfully`);
+            // toast.success(`Image ${i + 1} uploaded successfully`);
           } catch (error) {
             console.error(`Failed to upload image ${i + 1}:`, error);
             toast.error(`Failed to upload image ${i + 1}`);
@@ -165,7 +165,7 @@ export default function AddSimulatorModal({ isOpen, onClose, onSuccess }: AddSim
           imageUpdates
         );
         console.log("Simulator updated with images:", updateResponse.data);
-        toast.success("Simulator images updated successfully!");
+        // toast.success("Simulator images updated successfully!");
       }
 
       // Step 4: Create schedule templates
@@ -183,7 +183,7 @@ export default function AddSimulatorModal({ isOpen, onClose, onSuccess }: AddSim
         schedulePayload
       );
 
-      toast.success('Schedule templates created successfully! 🎉');
+      toast.success('Simulator created successfully!');
     } catch (error: any) {
       console.error("Error in simulator creation workflow:", error);
       const errorMessage = error.response?.data?.message || error.message || "Failed to create simulator";

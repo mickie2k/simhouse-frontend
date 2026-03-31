@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import { axiosJWTInstance } from '@/lib/http';
-import AddSimulatorModal from '@/components/AddSimulatorModal';
+import AddSimulatorModal from '@/components/forms/AddSimulatorModal';
 
 export default function MySimulatorsPage() {
     const [simulators, setSimulators] = useState<any[]>([]);
@@ -110,13 +110,6 @@ export default function MySimulatorsPage() {
                         setTimeout(() => setShowToast(false), 3000);
                     }}
                 />
-            )}
-
-            {showToast && (
-                <div className="fixed bottom-10 right-10 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-fade-in-up">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex justify-center items-center text-white text-sm font-bold">✓</div>
-                    <span className="font-medium">Simulator added successfully!</span>
-                </div>
             )}
         </div>
     );
