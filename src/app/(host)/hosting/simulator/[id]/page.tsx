@@ -321,7 +321,7 @@ export default function EditSimulatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row text-gray-900">
+    <div className="min-h-screen bg-white flex flex-col md:flex-row font-sans text-gray-900">
 
 
       <aside className="w-full md:w-72 border-r border-gray-200 bg-white z-50 md:fixed md:left-0 md:top-20 md:h-screen overflow-y-auto">
@@ -370,11 +370,11 @@ export default function EditSimulatorPage() {
         <div className="w-full">
 
           <div className="mb-10">
-            <h1 className="text-4xl font-bold tracking-tight">Edit Simulator #{simulatorId}</h1>
+            <h1 className="text-4xl font-extrabold tracking-tight">Edit Simulator #{simulatorId}</h1>
             <p className="text-gray-500 mt-2">Update your simulator information and details</p>
           </div>
 
-          <div className="bg-white rounded-3xl  space-y-16">
+          <div className="bg-white p-8 md:p-10 rounded-3xl border border-gray-200  space-y-16">
 
 
             <section id="general" className="scroll-mt-10">
@@ -661,7 +661,12 @@ export default function EditSimulatorPage() {
                   </div>
                   {errors.price && <p className="text-red-500 text-sm mt-1.5">{errors.price}</p>}
                 </div>
-
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                  <p className="text-sm text-orange-900 font-medium">
+                    <span className="font-bold">Platform Fee:</span> We charge a flat 10% service fee on every booking to help maintain the platform and provide 24/7 support.
+                  </p>
+                  <p className="text-xs text-orange-700 mt-2">Your estimated take-home: 25.00 / hr</p>
+                </div>
               </div>
             </section>
 
