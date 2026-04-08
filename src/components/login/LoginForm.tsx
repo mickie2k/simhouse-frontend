@@ -12,9 +12,11 @@ export default function LoginhtmlForm(
 	{
 		authContext,
 		googleEndpoint,
+		registerPath,
 	}: {
 		authContext: () => AuthContextType<any>;
 		googleEndpoint: string;
+		registerPath: string;
 	}
 ) {
 	const router = useRouter();
@@ -96,7 +98,7 @@ export default function LoginhtmlForm(
 							<p className="text-sm font-light text-gray-500 ">
 								Don’t have an account yet?{" "}
 								<Link
-									href="/register"
+									href={registerPath}
 									className="font-medium text-gray-600 hover:underline "
 								>
 									Sign up
@@ -114,6 +116,6 @@ export default function LoginhtmlForm(
 					</div>
 				</div>
 			</div>
-		</section>
+		</section >
 	);
 }

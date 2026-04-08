@@ -164,7 +164,7 @@ export default function HostBookingDetailPage() {
         if (!booking) return;
         setIsCanceling(true);
         try {
-            await axiosJWTInstance.patch(`/host/booking/${booking.id}`, { statusId: 0 });
+            await axiosJWTInstance.post(`/host/booking/${simId}/${booking.id}/cancel`);
             toast.success('Booking canceled');
             setBooking({ ...booking, statusId: 0, bookingStatus: { id: 0, statusName: 'CANCELED' } });
         } catch (error: any) {
