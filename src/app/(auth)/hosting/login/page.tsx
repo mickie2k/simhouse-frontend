@@ -11,7 +11,7 @@ export default function Login() {
 	return (
 		<HostAuthProvider>
 			<main className="min-h-full w-full relative">
-				<LoginForm authContext={useHostAuth} googleEndpoint="auth/host/google" registerPath="host/register" />
+				<LoginForm authContext={useHostAuth} googleEndpoint="auth/host/google" registerPath="register" />
 			</main>
 		</HostAuthProvider>
 	);

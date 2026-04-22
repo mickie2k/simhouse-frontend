@@ -11,7 +11,7 @@ export default function Login() {
 	return (
 		<CustomerAuthProvider>
 			<main className="min-h-full w-full relative">
-				<LoginForm authContext={useCustomerAuth} googleEndpoint="auth/customer/google" registerPath="customer/register" />
+				<LoginForm authContext={useCustomerAuth} googleEndpoint="auth/customer/google" registerPath="register" />
 			</main>
 		</CustomerAuthProvider>
 	);

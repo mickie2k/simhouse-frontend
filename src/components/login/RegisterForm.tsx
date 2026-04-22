@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { axiosInstance } from "@/lib/http";
+import axios from "axios";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 
 export default function RegisterForm(
 	{
@@ -15,21 +17,32 @@ export default function RegisterForm(
 		redirectURI: string
 	}) {
 	const router = useRouter();
+	const [telephone, setTelephone] = useState<string | undefined>(undefined);
+
 	const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+
+		if (!telephone || !isValidPhoneNumber(telephone)) {
+			toast.error("Please enter a valid telephone number");
+			return;
+		}
 
 		const formData = new FormData(event.currentTarget);
 		const formDataJson: { [key: string]: FormDataEntryValue } = {};
 		formData.forEach((value, key) => {
 			formDataJson[key] = value;
 		});
+		formDataJson.phone = telephone;
+		console.log(telephone)
+
+
 
 		try {
 			await axiosInstance.post(registerEndpoint, formDataJson);
 			toast.success("Register success");
 			router.push(redirectURI);
 		} catch (error) {
-			toast.error("This username have already been taken");
+			axios.isAxiosError(error) ? toast.error(error.response?.data?.message || "Register failed") : toast.error("Register failed");
 		}
 	};
 	return (
@@ -94,6 +107,25 @@ export default function RegisterForm(
 									id="email"
 									className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg  block w-full p-2.5 "
 									placeholder="name@example.com"
+									required
+								/>
+							</div>
+							<div>
+								<label
+									htmlFor="phone"
+									className="block mb-2 text-sm font-medium text-gray-900 "
+								>
+									Your Telephone
+								</label>
+								<PhoneInput
+									id="phone"
+									name="phone"
+									defaultCountry="TH"
+									international
+									value={telephone}
+									onChange={setTelephone}
+									placeholder="Your telephone number"
+									className="register-phone-input"
 									required
 								/>
 							</div>
